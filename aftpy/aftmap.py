@@ -15,6 +15,16 @@ except:
 
 
 def file_search(path, fileext=None):
+    """
+       Search for files with the specified file extension in the given directory.
+
+       Args:
+       - path (str): The directory path to search for files.
+       - fileext (str, optional): The file extension to filter files. Defaults to "" (no filtering).
+
+       Returns:
+       - filelist (list): A list of file paths matching the specified criteria.
+    """
     files = []
     for dr, _, file in os.walk(path):
         for f in file:
@@ -22,7 +32,7 @@ def file_search(path, fileext=None):
                 files.append(os.path.join(dr, f))
             elif f.endswith(fileext):
                 files.append(os.path.join(dr, f))
-    return np.sort(files)
+    return np.sort(np.array(files))
 
 
 class AFTmap:
@@ -162,6 +172,14 @@ class AFTmap:
             return _time
 
     @property
+    def ymd(self):
+        year, month, day = self.time.split("-")[0:3]
+        return year, month, day[0:2]
+
+
+
+
+    @property
     def info(self):
         """
         Get additional information.
@@ -182,11 +200,11 @@ class AFTmap:
             info = None
         return info
 
-    def convert(self, outfile="fits", outpath=".", verbose=True):
+    def convert(self, convert_to="fits", outpath=".", verbose=True):
         if self.filetype == "h5":
             header = self.metadata
             data = self.aftmap
-            if outfile == "fits":
+            if convert_to == "fits":
                 hdu = fits.PrimaryHDU(data)
                 hdu.header.update(header)
                 hdu.writeto(outpath)
@@ -268,12 +286,37 @@ class AFTmap:
 
 
 class AFTload:
+    """
+        A class for loading AFT maps from files.
+
+        Attributes:
+        - path (str): The path to the directory containing AFT map files.
+        - filetype (str): The file extension of the AFT map files (e.g., "h5").
+        - date_fmt (str): The date format string used to parse timestamps from filenames.
+        - filelist (list): A list of file paths to AFT map files in the specified directory.
+        - filenames (numpy.ndarray): An array of filenames extracted from the filelist.
+
+        Methods:
+        - __init__(path=".", filetype="h5", date_fmt="AFTmap_%Y%m%d_%H%M.h5", verbose=True): Initializes the AFTload object.
+        - stats(): Prints statistics about the loaded AFT map files.
+    """
 
     def __init__(self, path=".", filetype="h5", date_fmt="AFTmap_%Y%m%d_%H%M.h5", verbose=True):
+        """
+            Initialize the AFTload object.
+
+            Args:
+            - path (str, optional): The path to the directory containing AFT map files. Defaults to current directory.
+            - filetype (str, optional): The file extension of the AFT map files. Defaults to "h5".
+            - date_fmt (str, optional): The date format string used to parse timestamps from filenames.
+              Defaults to "AFTmap_%Y%m%d_%H%M.h5".
+            - verbose (bool, optional): Whether to print statistics about the loaded AFT map files. Defaults to True.
+        """
         self.path = path
         self.filetype = filetype
         self.date_fmt = date_fmt
         self.filelist = file_search(path, fileext=filetype)
+        self.filenames = np.array([os.path.basename(f) for f in self.filelist])
         if verbose: self.stats()
 
     @property
@@ -288,6 +331,12 @@ class AFTload:
             _timestamp.append(dt.datetime.strptime(os.path.basename(_file), self.date_fmt))
         return Time(_timestamp)
 
+    def get_filelist(self):
+        return self.filelist
+
+    def get_filenames(self):
+        return np.array(self.filenames)
+
     def stats(self):
         _stats = {}
         _stats["RootDir"] = self.path
@@ -298,5 +347,25 @@ class AFTload:
         for _s in _stats.keys():
             print("%-10s: %-30s" % (_s, _stats.get(_s)))
 
-    # def convert_all(self, outfile="fits", outpath=".", verbose=True):
-    #     for _file in self.filelist:
+    def convert_all(self, convert_to="fits", outpath=".", verbose=True):
+        """
+        Convert all loaded AFT map files to the specified format.
+
+        Args:
+        - convert_to (str, optional): The output format to convert the AFT map files to. Defaults to "fits".
+        - outpath (str, optional): The directory path to save the converted files. Defaults to current directory.
+        - verbose (bool, optional): Whether to print conversion progress. Defaults to True.
+        """
+        for _file, i in zip(self.filelist, range(len(self.filelist))):
+            mapobj = AFTmap(_file)
+            yr, mo, day = mapobj.ymd
+            _outpath = os.path.join(outpath, str(yr) + "/" + str(mo))
+            if not os.path.exists(_outpath):
+                os.makedirs(_outpath)
+            _filename = os.path.splitext(os.path.basename(_file))[0]+"."+convert_to
+            _filename  = os.path.join(_outpath, _filename)
+            mapobj.convert(convert_to=convert_to, verbose=False, outpath=_filename)
+            if verbose:
+                frac = float(i+1)/len(self.filelist)*100
+                print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
+
