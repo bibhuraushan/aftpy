@@ -6,10 +6,10 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='aftpy',
-    version='0.0.1.7',
+    version='1.0.0',
     packages=['aftpy'],
     include_package_data=True,
-    package_data={"style": ["bkj_style.mplstyle", "data/list_of_files.csv"]},
+    package_data={"style": ["bkj_style.mplstyle", "list_of_files.csv"]},
     url='https://github.com/bibhuraushan/aftpy/',
     license='MIT',
     author='Bibhuti Kumar Jha',
