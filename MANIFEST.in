@@ -1,0 +1,2 @@
+include data/list_of_files.csv
+include bkj_style.mplstyle

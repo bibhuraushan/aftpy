@@ -5,10 +5,12 @@ import datetime as dt
 from astropy.time import Time
 from astropy.io import fits
 import os
+from pathlib import Path
+this_directory = Path(__file__).parent
 import sunpy.visualization.colormaps
 
 try:
-    plt.style.use('aftpy/bkj_style.mplstyle')
+    plt.style.use(f'{this_directory}/bkj_style.mplstyle')
 except:
     plt.style.use('default')
     print("Using default matplotlib style.")
@@ -64,7 +66,7 @@ class AFTmap:
                      "vlon": "Phi Component of flows at the surface.",
                      "magmap": "Assimilated magnetogram in Carrington Grid."}
 
-    def __init__(self, file, filetype="h5", date_fmt="AFTmap_%Y%m%d_%H%M.h5"):
+    def __init__(self, file, filetype="h5", date_fmt="AFTmap_%Y%m%d_%H%M.h5", timestamp=None):
         """
         Initialize an AFTmap object.
 
@@ -76,10 +78,17 @@ class AFTmap:
         self.filetype = filetype
         self.date_fmt = date_fmt
         self.map_list = None
+        self.timestamp = timestamp
 
         if self.filetype == "h5":
             with hdf.File(self.file) as fl:
                 self.map_list = [_key for _key in fl["maps"].keys()]
+
+        if (filetype == "hipft") & (self.timestamp is None):
+            print("Timestamp not provided. Assuming today as the timestamp.")
+            self.timestamp = Time(dt.datetime.today()).fits
+        elif timestamp is not None:
+            self.timestamp = Time(timestamp).fits
 
     @property
     def contents(self):
@@ -104,6 +113,9 @@ class AFTmap:
                 bmap = _data.reshape(512, -1)
             else:
                 bmap = _data[0:int(512 * 1024)].reshape(512, -1)
+        elif self.filetype == "hipft":
+            with hdf.File(self.file) as fl:
+                bmap = np.array(fl["Data"])
         else:
             bmap = None
         return bmap
@@ -169,15 +181,14 @@ class AFTmap:
         elif self.filetype == "dat":
             _time = Time(datetime.datetime.strptime(
                 self.name, self.date_fmt))
+        elif self.filetype == "hipft":
+            _time = self.timestamp
             return _time
 
     @property
     def ymd(self):
         year, month, day = self.time.split("-")[0:3]
         return year, month, day[0:2]
-
-
-
 
     @property
     def info(self):
@@ -301,7 +312,9 @@ class AFTload:
         - stats(): Prints statistics about the loaded AFT map files.
     """
 
-    def __init__(self, path=".", filetype="h5", date_fmt="AFTmap_%Y%m%d_%H%M.h5", verbose=True):
+    def __init__(self, path=".", filetype="h5",
+                 date_fmt="AFTmap_%Y%m%d_%H%M.h5",
+                 verbose=True, hipft_prop=None):
         """
             Initialize the AFTload object.
 
@@ -315,9 +328,18 @@ class AFTload:
         self.path = path
         self.filetype = filetype
         self.date_fmt = date_fmt
-        self.filelist = file_search(path, fileext=filetype)
+        if filetype=="hipft":
+            _fileext = "h5"
+        else:
+            _fileext = filetype
+        self.filelist = file_search(path, fileext=_fileext)
         self.filenames = np.array([os.path.basename(f) for f in self.filelist])
-        if verbose: self.stats()
+        self.hipft_prop = hipft_prop
+        if (filetype == "hipft") & (hipft_prop is None):
+            raise Exception("HIPFT Time information not provided")
+
+        if verbose:
+            self.stats()
 
     @property
     def aftmaps(self):
@@ -327,8 +349,13 @@ class AFTload:
     @property
     def timestamps(self):
         _timestamp = []
-        for _file in self.filelist:
-            _timestamp.append(dt.datetime.strptime(os.path.basename(_file), self.date_fmt))
+        if self.filetype != "hipft":
+            for _file in self.filelist:
+                _timestamp.append(dt.datetime.strptime(os.path.basename(_file), self.date_fmt))
+        else:
+            _t0 = self.hipft_prop["T0"]
+            _dt = self.hipft_prop["dt"]
+            _timestamp = [_t0 + dt.timedelta(i*_dt) for i in range(len(self.filelist))]
         return Time(_timestamp)
 
     def get_filelist(self):
@@ -361,11 +388,10 @@ class AFTload:
             yr, mo, day = mapobj.ymd
             _outpath = os.path.join(outpath, str(yr) + "/" + str(mo))
             if not os.path.exists(_outpath):
-                os.makedirs(_outpath)
-            _filename = os.path.splitext(os.path.basename(_file))[0]+"."+convert_to
-            _filename  = os.path.join(_outpath, _filename)
+                os.makedirs(_outpath, exist_ok=True)
+            _filename = os.path.splitext(os.path.basename(_file))[0] + "." + convert_to
+            _filename = os.path.join(_outpath, _filename)
             mapobj.convert(convert_to=convert_to, verbose=False, outpath=_filename)
             if verbose:
-                frac = float(i+1)/len(self.filelist)*100
+                frac = float(i + 1) / len(self.filelist) * 100
                 print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
-
