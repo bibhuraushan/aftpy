@@ -86,7 +86,7 @@ class AFTdownload:
         else:
             self.reload_files()
 
-    def get_list(self, t0=None, t1=None, deltat=1):
+    def get_list(self, t0=None, t1=None, cadance=1):
         """
                 Gets a list of AFT map files within a specified time range.
 
@@ -97,10 +97,11 @@ class AFTdownload:
 
                 Returns:
                     DataFrame: DataFrame containing the list of files within the specified time range.
+                    :param cadance:
                     :param t0:
                     :param t1:
-                    :param deltat:
                 """
+        deltat = int(4/cadance)
         if (t0 is None) & (t1 is None):
             return self.datalist
         else:
