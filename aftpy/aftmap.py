@@ -1,3 +1,5 @@
+from typing import Tuple, Any
+
 import h5py as hdf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,6 +8,9 @@ from astropy.time import Time
 from astropy.io import fits
 import os
 from pathlib import Path
+
+from numpy import ndarray, dtype
+
 this_directory = Path(__file__).parent
 import sunpy.visualization.colormaps
 
@@ -16,7 +21,7 @@ except:
     print("Using default matplotlib style.")
 
 
-def file_search(path, fileext=None):
+def file_search(path, fileext: str = None) -> np.ndarray:
     """
        Search for files with the specified file extension in the given directory.
 
@@ -66,7 +71,9 @@ class AFTmap:
                      "vlon": "Phi Component of flows at the surface.",
                      "magmap": "Assimilated magnetogram in Carrington Grid."}
 
-    def __init__(self, file, filetype="h5", date_fmt="AFTmap_%Y%m%d_%H%M.h5", timestamp=None):
+    def __init__(self, file, filetype: str = "h5",
+                 date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
+                 timestamp: dt.datetime = None):
         """
         Initialize an AFTmap object.
 
@@ -91,11 +98,11 @@ class AFTmap:
             self.timestamp = Time(timestamp).fits
 
     @property
-    def contents(self):
+    def contents(self) -> list:
         return self.map_list
 
     @property
-    def aftmap(self):
+    def aftmap(self) -> np.ndarray:
         """
         Get the AFT map data.
 
@@ -121,7 +128,7 @@ class AFTmap:
         return bmap
 
     @property
-    def mask(self):
+    def mask(self) -> np.ndarray:
         """
         Get the mask data.
 
@@ -138,7 +145,7 @@ class AFTmap:
         return mask
 
     @property
-    def vv(self):
+    def vv(self) -> tuple[ndarray[Any, dtype[Any]] | None, ndarray[Any, dtype[Any]] | None]:
         """
         Get vlat and vlon data.
 
@@ -155,7 +162,7 @@ class AFTmap:
         return vlat, vlon
 
     @property
-    def metadata(self):
+    def metadata(self) -> dict[str, Any]:
         """
         Get metadata.
 
@@ -175,23 +182,23 @@ class AFTmap:
         return header
 
     @property
-    def time(self):
+    def time(self) -> str:
         if self.filetype == "h5":
             return self.metadata["map_date"]
         elif self.filetype == "dat":
-            _time = Time(datetime.datetime.strptime(
+            _time = Time(dt.datetime.strptime(
                 self.name, self.date_fmt))
         elif self.filetype == "hipft":
             _time = self.timestamp
             return _time
 
     @property
-    def ymd(self):
+    def ymd(self) -> tuple:
         year, month, day = self.time.split("-")[0:3]
         return year, month, day[0:2]
 
     @property
-    def info(self):
+    def info(self) -> dict[str, Any]:
         """
         Get additional information.
 
@@ -211,7 +218,7 @@ class AFTmap:
             info = None
         return info
 
-    def convert(self, convert_to="fits", outpath=".", verbose=True):
+    def convert(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True):
         if self.filetype == "h5":
             header = self.metadata
             data = self.aftmap
@@ -224,7 +231,7 @@ class AFTmap:
             else:
                 print("No implemented Yet.")
 
-    def plot(self, show_mask=True, save=False):
+    def plot(self, show_mask: bool = True, save: bool = False) -> tuple:
         """
         Display or save the AFT map visualization.
 
@@ -268,7 +275,7 @@ class AFTmap:
             plt.show()
         return fig, ax
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Get a string representation of the object.
 
@@ -312,9 +319,9 @@ class AFTload:
         - stats(): Prints statistics about the loaded AFT map files.
     """
 
-    def __init__(self, path=".", filetype="h5",
-                 date_fmt="AFTmap_%Y%m%d_%H%M.h5",
-                 verbose=True, hipft_prop=None):
+    def __init__(self, path: str = ".", filetype: str = "h5",
+                 date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
+                 verbose: bool = True, hipft_prop: dict = None):
         """
             Initialize the AFTload object.
 
@@ -328,7 +335,7 @@ class AFTload:
         self.path = path
         self.filetype = filetype
         self.date_fmt = date_fmt
-        if filetype=="hipft":
+        if filetype == "hipft":
             _fileext = "h5"
         else:
             _fileext = filetype
@@ -355,13 +362,13 @@ class AFTload:
         else:
             _t0 = self.hipft_prop["T0"]
             _dt = self.hipft_prop["dt"]
-            _timestamp = [_t0 + dt.timedelta(i*_dt) for i in range(len(self.filelist))]
+            _timestamp = [_t0 + dt.timedelta(i * _dt) for i in range(len(self.filelist))]
         return Time(_timestamp)
 
-    def get_filelist(self):
+    def get_filelist(self) -> np.ndarray:
         return self.filelist
 
-    def get_filenames(self):
+    def get_filenames(self) -> np.ndarray:
         return np.array(self.filenames)
 
     def stats(self):
@@ -374,7 +381,7 @@ class AFTload:
         for _s in _stats.keys():
             print("%-10s: %-30s" % (_s, _stats.get(_s)))
 
-    def convert_all(self, convert_to="fits", outpath=".", verbose=True):
+    def convert_all(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True):
         """
         Convert all loaded AFT map files to the specified format.
 

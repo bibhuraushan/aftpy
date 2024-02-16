@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='aftpy',
-    version='1.0.0',
+    version='1.0.1',
     packages=['aftpy'],
     include_package_data=True,
     package_data={"style": ["bkj_style.mplstyle", "list_of_files.csv"]},

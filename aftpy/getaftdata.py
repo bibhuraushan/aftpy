@@ -9,6 +9,7 @@ from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
 import tqdm as tq
 from pathlib import Path
+
 this_directory = Path(__file__).parent
 
 
@@ -68,7 +69,7 @@ class AFTdownload:
        """
     ncpu = cpu_count() - 1
 
-    def __init__(self, root_url="https://data.boulder.swri.edu/lisa/"):
+    def __init__(self, root_url: str = "https://data.boulder.swri.edu/lisa/"):
         """
         Initializes the AFTdownload object.
 
@@ -85,8 +86,9 @@ class AFTdownload:
             self.datalist = pd.read_csv(self.datafile, index_col="times")
         else:
             self.reload_files()
+            self.datalist = pd.read_csv(self.datafile, index_col="times")
 
-    def get_list(self, t0=None, t1=None, cadance=1):
+    def get_list(self, t0: dt.datetime = None, t1: dt.datetime = None, cadance: int = 1) -> pd.DataFrame:
         """
                 Gets a list of AFT map files within a specified time range.
 
@@ -101,7 +103,7 @@ class AFTdownload:
                     :param t0:
                     :param t1:
                 """
-        deltat = int(4/cadance)
+        deltat = int(4 / cadance)
         if (t0 is None) & (t1 is None):
             return self.datalist
         else:
@@ -120,7 +122,7 @@ class AFTdownload:
             data = self.datalist.iloc[x1:x2:deltat].copy()
             return data
 
-    def reload_files(self, url=None, filetype="h5"):
+    def reload_files(self, url: str = None, filetype: str = "h5") -> bool:
         """
         Reloads the list of AFT map files from the root URL.
 
@@ -155,7 +157,7 @@ class AFTdownload:
         data.to_csv(self.datafile)
         return True
 
-    def download(self, dataframe, rootpath=None, ncpu=None):
+    def download(self, dataframe, rootpath: str = None, ncpu: int = None):
         """
         Downloads AFT map files listed in the DataFrame.
 
