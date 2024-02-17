@@ -16,21 +16,21 @@ import sunpy.visualization.colormaps
 
 try:
     plt.style.use(f'{this_directory}/bkj_style.mplstyle')
-except:
+except Warning:
     plt.style.use('default')
     print("Using default matplotlib style.")
 
 
-def file_search(path, fileext: str = None) -> np.ndarray:
+def file_search(path: str, fileext: str = None) -> np.ndarray:
     """
        Search for files with the specified file extension in the given directory.
 
-       Args:
-       - path (str): The directory path to search for files.
-       - fileext (str, optional): The file extension to filter files. Defaults to "" (no filtering).
-
-       Returns:
-       - filelist (list): A list of file paths matching the specified criteria.
+    Parameters
+    ----------
+    path: str
+    The directory in which the given file will be searched.
+    fileext: str
+    The file extension to be searched for. Defaults to "" (no filtering)
     """
     files = []
     for dr, _, file in os.walk(path):
@@ -42,7 +42,7 @@ def file_search(path, fileext: str = None) -> np.ndarray:
     return np.sort(np.array(files))
 
 
-class AFTmap:
+class  AFTmap:
     """
     A class to work with AFT maps.
 
@@ -71,14 +71,22 @@ class AFTmap:
                      "vlon": "Phi Component of flows at the surface.",
                      "magmap": "Assimilated magnetogram in Carrington Grid."}
 
-    def __init__(self, file, filetype: str = "h5",
+    def __init__(self, file: str, filetype: str = "h5",
                  date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
                  timestamp: dt.datetime = None):
         """
         Initialize an AFTmap object.
 
-        Args:
-        - file (str): Path to the HDF5 file.
+        Parameters
+        ----------
+        file: str
+        Name of the to be loaded or read.
+        filetype: str, optional
+        Type of the file to load. Default is "h5"
+        date_fmt:str, optional
+        Date format of the file. Default is "AFTmap_%Y%m%d_%H%M.h5"
+        timestamp: dt.datetime, optional
+        Timestamp of the file if filetype is "hipft". Default is dt.datetime
         """
         self.file = file
         self.name = file.split("/")[-1]
@@ -99,6 +107,15 @@ class AFTmap:
 
     @property
     def contents(self) -> list:
+        """
+        Returns the contents of the AFTmap file as list.
+
+        Returns
+        -------
+        maplist: list
+        Contents of the AFTmap file.
+
+        """
         return self.map_list
 
     @property
@@ -106,8 +123,10 @@ class AFTmap:
         """
         Get the AFT map data.
 
-        Returns:
-        - bmap (numpy.ndarray): AFT map data.
+        Returns
+        -------
+        aftmap: ndarray
+        The AFT map file.
         """
         if self.filetype == "h5":
             # For HDF file
@@ -134,6 +153,11 @@ class AFTmap:
 
         Returns:
         - mask (numpy.ndarray): Mask data.
+
+        Returns
+        -------
+        mask: ndarray
+        The region where data assimilation has been performed.
         """
         if "mask" in self.map_list:
             with hdf.File(self.file) as fl:
@@ -219,6 +243,19 @@ class AFTmap:
         return info
 
     def convert(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True):
+        """
+        Function to convert all the files in the given directory and save them in
+        outpath directory with the proper directory structure.
+
+        Parameters
+        ----------
+        convert_to: str, optionals
+        The type of converted files.
+        outpath: str, optionals
+        The path to save the converted files.
+        verbose:bool, optionals
+        Whether to show progress.
+        """
         if self.filetype == "h5":
             header = self.metadata
             data = self.aftmap
@@ -242,6 +279,20 @@ class AFTmap:
         Returns:
         - fig (matplotlib.figure.Figure): The Figure object.
         - ax (matplotlib.axes._axes.Axes): The AxesSubplot object.
+
+        Parameters
+        ----------
+        show_mask: bool, optional
+        Whether to show the mask of the AFT map. Defaults to True
+        save: bool, optional
+        Whether to save the visualization as an image. Defaults to False.
+
+        Returns
+        -------
+        fig, object:
+        The Figure object.
+        ax: matplotlib.axes._axes.AxesSubplot
+        The AxesSubplot object.
         """
         fig, ax = plt.subplots(figsize=(7, 3.5))
         ax.grid(linestyle="--", color="white", alpha=0.3)
@@ -279,8 +330,10 @@ class AFTmap:
         """
         Get a string representation of the object.
 
-        Returns:
-        - str: String representation.
+        Returns
+        -------
+        str
+        String representation of the object.
         """
         dct = self.metadata
         dct1 = self.info
@@ -323,14 +376,20 @@ class AFTload:
                  date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
                  verbose: bool = True, hipft_prop: dict = None):
         """
-            Initialize the AFTload object.
+        Initilaizing class function.
 
-            Args:
-            - path (str, optional): The path to the directory containing AFT map files. Defaults to current directory.
-            - filetype (str, optional): The file extension of the AFT map files. Defaults to "h5".
-            - date_fmt (str, optional): The date format string used to parse timestamps from filenames.
-              Defaults to "AFTmap_%Y%m%d_%H%M.h5".
-            - verbose (bool, optional): Whether to print statistics about the loaded AFT map files. Defaults to True.
+        Parameters
+        ----------
+        path: str, optional
+        The path to the AFT map file. Defaults to the current working directory.
+        filetype: str, optional
+        The file extension of the AFT map. Default to the "h5"
+        date_fmt:str, optional
+        The date format string. Defaults to the "AFTmap_%Y%m%d_%H%M.h5"
+        verbose:bool, optional
+        Whether to print or not. Defaults to the True
+        hipft_prop: dict, optional
+        A dictionary for hipft properties, if filetype is "hipft", the hipft
         """
         self.path = path
         self.filetype = filetype
@@ -350,11 +409,23 @@ class AFTload:
 
     @property
     def aftmaps(self):
+        """
+        An itterator containing all the AFTmaps associated.
+        """
         for _file in self.filelist:
             yield AFTmap(_file, date_fmt=self.date_fmt, filetype=self.filetype)
 
     @property
     def timestamps(self):
+        """
+        To get timestamps for all files in the AFT map directory.
+
+        Returns
+        -------
+        object
+        List of timestamps corresponding to each AFT map in the directory.
+
+        """
         _timestamp = []
         if self.filetype != "hipft":
             for _file in self.filelist:
@@ -366,12 +437,33 @@ class AFTload:
         return Time(_timestamp)
 
     def get_filelist(self) -> np.ndarray:
+        """
+        To get the full paths of the loaded files in the AFTmaps folder.
+
+        Returns
+        -------
+        np.ndarray
+        List of all files in the AFTmaps directory.
+
+        """
         return self.filelist
 
     def get_filenames(self) -> np.ndarray:
+        """
+        Returns the names of the files in the AFTMap directory.
+
+        Returns
+        -------
+        np.ndarray
+        list of filenames.
+
+        """
         return np.array(self.filenames)
 
     def stats(self):
+        """
+        Show the statistics of the loaded files.
+        """
         _stats = {}
         _stats["RootDir"] = self.path
         _stats["FileType"] = self.filetype
@@ -385,10 +477,14 @@ class AFTload:
         """
         Convert all loaded AFT map files to the specified format.
 
-        Args:
-        - convert_to (str, optional): The output format to convert the AFT map files to. Defaults to "fits".
-        - outpath (str, optional): The directory path to save the converted files. Defaults to current directory.
-        - verbose (bool, optional): Whether to print conversion progress. Defaults to True.
+        Parameters
+        ----------
+        convert_to: str, optional
+        The output format to AFTMap to fits. Defaults to "fits"
+        outpath: str, optional
+        The directory in which to save the fits. Defaults to "."
+        verbose: bool, optional
+        Show progress. Defaults to True
         """
         for _file, i in zip(self.filelist, range(len(self.filelist))):
             mapobj = AFTmap(_file)
