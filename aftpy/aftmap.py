@@ -5,9 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
 from astropy.time import Time
+import astropy.units as u
 from astropy.io import fits
 import os
 from pathlib import Path
+from sunpy.map.header_helper import make_heliographic_header
+from sunpy.coordinates.sun import L0
+from sunpy.coordinates import get_earth
 
 from numpy import ndarray, dtype
 
@@ -42,7 +46,7 @@ def file_search(path: str, fileext: str = None) -> np.ndarray:
     return np.sort(np.array(files))
 
 
-class  AFTmap:
+class AFTmap:
     """
     A class to work with AFT maps.
 
@@ -71,7 +75,7 @@ class  AFTmap:
                      "vlon": "Phi Component of flows at the surface.",
                      "magmap": "Assimilated magnetogram in Carrington Grid."}
 
-    def __init__(self, file: str, filetype: str = "h5",
+    def __init__(self, file: str, filetype: str = "aftmap",
                  date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
                  timestamp: dt.datetime = None):
         """
@@ -94,10 +98,13 @@ class  AFTmap:
         self.date_fmt = date_fmt
         self.map_list = None
         self.timestamp = timestamp
+        self.fileext = {"aftmap": "h5", "oldaft": "dat", "hipft": "h5"}
 
-        if self.filetype == "h5":
+        if self.filetype == "aftmap":
             with hdf.File(self.file) as fl:
                 self.map_list = [_key for _key in fl["maps"].keys()]
+        else:
+            self.map_list = ["aftmap"]
 
         if (filetype == "hipft") & (self.timestamp is None):
             print("Timestamp not provided. Assuming today as the timestamp.")
@@ -128,11 +135,11 @@ class  AFTmap:
         aftmap: ndarray
         The AFT map file.
         """
-        if self.filetype == "h5":
+        if self.filetype == "aftmap":
             # For HDF file
             with hdf.File(self.file) as fl:
                 bmap = np.array(fl["maps/aftmap"])
-        elif self.filetype == "dat":
+        elif self.filetype == "oldaft":
             # For old dat file
             _data = np.fromfile(self.file, dtype=np.float32)
             if _data.size == 512 * 1024:
@@ -169,21 +176,56 @@ class  AFTmap:
         return mask
 
     @property
-    def vv(self) -> tuple[ndarray[Any, dtype[Any]] | None, ndarray[Any, dtype[Any]] | None]:
+    def magmap(self) -> np.ndarray:
         """
-        Get vlat and vlon data.
+        Get the hmi assimilated data if available.
+
+        Returns:
+        - magmap (numpy.ndarray): Magmap data.
+
+        Returns
+        -------
+        magmap: ndarray
+        The hmi assimilated data if available.
+        """
+        if "magmap" in self.map_list:
+            with hdf.File(self.file) as fl:
+                mask = np.array(fl["maps/magmap"])
+        elif self.filetype == "dat":
+            raise Warning("No Mask File found in dat file.")
+        else:
+            mask = None
+        return mask
+
+    @property
+    def vlat(self) -> ndarray[Any, dtype[Any]] | None:
+        """
+        Get vlat data.
 
         Returns:
         - vlat (numpy.ndarray): Vlat data.
-        - vlon (numpy.ndarray): Vlon data.
         """
         if "vlat" in self.map_list:
             with hdf.File(self.file) as fl:
                 vlat = np.array(fl["maps/vlat"])
+        else:
+            vlat = None
+        return vlat
+
+    @property
+    def vlon(self) -> ndarray[Any, dtype[Any]] | None:
+        """
+        Get vlon data.
+
+        Returns:
+        - vlon (numpy.ndarray): Vlon data.
+        """
+        if "vlon" in self.map_list:
+            with hdf.File(self.file) as fl:
                 vlon = np.array(fl["maps/vlon"])
         else:
-            vlat, vlon = None, None
-        return vlat, vlon
+            vlon = None
+        return vlon
 
     @property
     def metadata(self) -> dict[str, Any]:
@@ -194,7 +236,7 @@ class  AFTmap:
         - header (dict): Metadata.
         """
         header = {}
-        if self.filetype == "h5":
+        if self.filetype == "aftmap":
             with hdf.File(self.file) as fl:
                 for _key in fl["header"].keys():
                     _val = list(fl["header"][_key])[0]
@@ -206,8 +248,28 @@ class  AFTmap:
         return header
 
     @property
+    def header(self) -> fits.header.Header:
+        _headeraft = self.metadata
+        date = self.time
+        l0 = L0(date)
+        if l0.deg > 180:
+            l0 = l0.deg - 360.0
+        else:
+            l0 = l0.deg
+        observer = get_earth(date)
+        _header = make_heliographic_header(date, observer, (512, 1024),
+                                           frame='carrington',
+                                           projection_code="CAR",
+                                           map_center_longitude=180 * u.deg)
+        _header['hgln_obs'] = self.metadata["crln_obs"]
+        _header['hglt_obs'] = self.metadata["crlt_obs"]
+        header = fits.header.Header(_header)
+        header.update(_headeraft)
+        return header
+
+    @property
     def time(self) -> str:
-        if self.filetype == "h5":
+        if self.filetype == "aftmap":
             return self.metadata["map_date"]
         elif self.filetype == "dat":
             _time = Time(dt.datetime.strptime(
@@ -230,7 +292,7 @@ class  AFTmap:
         - info (dict): Additional information.
         """
         info = {}
-        if self.filetype == "h5":
+        if self.filetype == "aftmap":
             with hdf.File(self.file) as fl:
                 for _key in fl["header"].keys():
                     try:
@@ -256,12 +318,11 @@ class  AFTmap:
         verbose:bool, optionals
         Whether to show progress.
         """
-        if self.filetype == "h5":
+        if self.filetype == "aftmap":
             header = self.metadata
             data = self.aftmap
             if convert_to == "fits":
-                hdu = fits.PrimaryHDU(data)
-                hdu.header.update(header)
+                hdu = fits.PrimaryHDU(data, self.header)
                 hdu.writeto(outpath)
                 if verbose:
                     print(f"Output written to {outpath}.")
@@ -313,7 +374,7 @@ class  AFTmap:
         _ticks = [-750, -500, -250, 0, 250, 500, 750]
         axc.set_yticks(_ticks, _ticks, rotation="vertical", va="center")
         axc.tick_params(direction="out")
-        if show_mask & (self.filetype == "h5"):
+        if show_mask & (self.filetype == "aftmap"):
             ax.contour(self.mask, extent=_extent,
                        colors="white", linewidths=1,
                        linestyles=":")
@@ -338,7 +399,7 @@ class  AFTmap:
         dct = self.metadata
         dct1 = self.info
         print(" " * 30 + f"{self.name}" + " " * 30)
-        if self.filetype == "h5":
+        if self.filetype == "aftmap":
             print("-" * 85)
             print(" " * 36 + f"MAP CONTENTS" + " " * 37)
             print("-" * 85)
@@ -372,7 +433,7 @@ class AFTload:
         - stats(): Prints statistics about the loaded AFT map files.
     """
 
-    def __init__(self, path: str = ".", filetype: str = "h5",
+    def __init__(self, path: str = ".", filetype: str = "aftmap",
                  date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
                  verbose: bool = True, hipft_prop: dict = None):
         """
@@ -394,11 +455,8 @@ class AFTload:
         self.path = path
         self.filetype = filetype
         self.date_fmt = date_fmt
-        if filetype == "hipft":
-            _fileext = "h5"
-        else:
-            _fileext = filetype
-        self.filelist = file_search(path, fileext=_fileext)
+        self._fileext = {"aftmap": "h5", "oldaft": "dat", "hipft": "h5"}
+        self.filelist = file_search(path, fileext=self._fileext[filetype])
         self.filenames = np.array([os.path.basename(f) for f in self.filelist])
         self.hipft_prop = hipft_prop
         if (filetype == "hipft") & (hipft_prop is None):
