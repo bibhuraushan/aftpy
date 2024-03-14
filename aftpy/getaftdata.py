@@ -88,7 +88,7 @@ class AFTdownload:
             self.reload_files()
             self.datalist = pd.read_csv(self.datafile, index_col="times")
 
-    def get_list(self, t0: dt.datetime = None, t1: dt.datetime = None, cadance: int = 1) -> pd.DataFrame:
+    def get_list(self, t0: dt.datetime = None, t1: dt.datetime = None, cadence: int = 1) -> pd.DataFrame:
         """
                 Gets a list of AFT map files within a specified time range.
 
@@ -99,11 +99,14 @@ class AFTdownload:
 
                 Returns:
                     DataFrame: DataFrame containing the list of files within the specified time range.
-                    :param cadance:
+                    :param cadence:
                     :param t0:
                     :param t1:
                 """
-        deltat = int(4 / cadance)
+        _cadence = [1, 2, 4]
+        if not (cadence in _cadence):
+            raise ValueError(f"Cadence has to be one of {_cadence}.")
+        deltat = int(4 / cadence)
         if (t0 is None) & (t1 is None):
             return self.datalist
         else:

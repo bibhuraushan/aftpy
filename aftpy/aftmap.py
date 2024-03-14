@@ -69,6 +69,8 @@ class AFTmap:
     ny = 512
     dlat = np.pi / ny
     dlatlon = 2.0 * np.pi / nx
+    lat = np.tile(np.arange(0.5, ny) * 180.0 / ny - 90.0, (nx, 1)).T
+    lon = np.tile(np.arange(0.5, nx) * 360.0 / nx, (ny, 1))
     contents_info = {"aftmap": "AFT Baseline Map.",
                      "mask": "Region of Data Assimilation.",
                      "vlat": "Theta Component of flows at the surface.",
@@ -251,11 +253,6 @@ class AFTmap:
     def header(self) -> fits.header.Header:
         _headeraft = self.metadata
         date = self.time
-        l0 = L0(date)
-        if l0.deg > 180:
-            l0 = l0.deg - 360.0
-        else:
-            l0 = l0.deg
         observer = get_earth(date)
         _header = make_heliographic_header(date, observer, (512, 1024),
                                            frame='carrington',
@@ -323,7 +320,7 @@ class AFTmap:
             data = self.aftmap
             if convert_to == "fits":
                 hdu = fits.PrimaryHDU(data, self.header)
-                hdu.writeto(outpath)
+                hdu.writeto(outpath, overwrite=True)
                 if verbose:
                     print(f"Output written to {outpath}.")
             else:
