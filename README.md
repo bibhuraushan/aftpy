@@ -1,36 +1,43 @@
 # AFTpy
-The Python package enables users to download, visualize, and analyze
-AFT HDF (h5) data seamlessly. `AFTPy` offers a comprehensive solution for
+
+`AFTPy` offers a comprehensive solution for
 analyzing and downloading Advective Flux Transport (AFT) data,
 streamlining the process of data downloading in parallel and
 also facilitating the conversion of H5 files into the most popular
 FITS file format or various other formats with ease.
 
 ## Installation
+
 ### From PyPI
+
 ```shell
 pip install aftpy
 ```
 
 ### From source
+
 ```shell
 git clone git@github.com:bibhuraushan/aftpy.git
 cd aftpy
 python setup.py install
 ```
 
-## Discriptions
-`aftpy` provides two importent python module named `aftmap` and `aftgetdata`. These modules can be used
-to read the single **aftmap file** or load all the files from a given directory.
+## Descriptions
+
+`aftpy` provides two important Python modules named `aftmap` and `aftgetdata`. These modules can be used
+to read a single **aftmap file** or load all the files from a given directory.
 
 ## aftmap module
-`aftmap` modules also provides two python class `AFTmap` and `AFTload`. The `AFTmap` class
-provide an interface to read the singale H5 **AFTmap** file and provide you the functions and isntances 
+
+The `aftmap` module also provides two Python classes `AFTmap` and `AFTload`. The `AFTmap` class
+provides an interface to read a single H5 **AFTmap** file and provides you the functions and instances 
 to get the information and plot the data. The other class `AFTload` provides the interface to load 
 all the data from a directory and provide the instances and function to know about the loaded data. It also
-provides a function to convert all the loaded data in to popular **FITS** file.
+provides a function to convert all the loaded data into **FITS** files.
 
 ### AFTmap Class
+
+Coming soon. 
 
 ### AFTload Class
 
@@ -48,7 +55,7 @@ A class for loading all AFT maps from directory.
 
 - `convert_all(convert_to="fits", outpath=".", verbose=True)` Convert all loaded AFT map files to the specified format.
   - `convert_to` (str, optional): The output format to convert the AFT map files to. Defaults to "fits".
-  - `outpath` (str, optional): The directory path to save the converted files. Defaults to current directory.
+  - `outpath` (str, optional): The directory to save the converted files. Defaults to current directory.
   - `verbose` (bool, optional): Whether to print conversion progress. Defaults to True.
 
 #### Example Usage
@@ -66,7 +73,8 @@ loader.convert_all(convert_to="fits", outpath="/path/to/converted/maps", verbose
 
 ## aftgetdata module
 
-### AFTdownlaod Clas
+### AFTdownload Class
+
 A class for downloading AFT map files from a specified URL.
 
 #### Attributes
@@ -79,6 +87,7 @@ A class for downloading AFT map files from a specified URL.
 - `datalist` (DataFrame): DataFrame containing the list of files and corresponding timestamps.
 
 #### Methods
+
 - `get_list(t0=None, t1=None, dt=1) -> data (DataFrame)`
   - `t0` (datetime.datetime, optional): Start time of the time range. Defaults to None.
   - `t1` (datetime.datetime, optional): End time of the time range. Defaults to None.
@@ -91,7 +100,7 @@ A class for downloading AFT map files from a specified URL.
   - `Returns`: True if the list of files is successfully reloaded.
 - `download(dataframe, rootpath=None, ncpu=None)` Download AFT map files listed in the DataFrame.
   - `dataframe` (DataFrame): DataFrame containing the list of files to download.
-  - `rootpath` (str, optional): Root directory path to save the downloaded files. Defaults to None.
+  - `rootpath` (str, optional): Root directory to save the downloaded files. Defaults to None.
   - `ncpu` (int, optional): Number of CPU cores to utilize for downloading files. Defaults to `cpu_count() - 1`.
 
 
