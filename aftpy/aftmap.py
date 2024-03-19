@@ -68,9 +68,11 @@ class AFTmap:
     nx = 1024
     ny = 512
     dlat = np.pi / ny
-    dlatlon = 2.0 * np.pi / nx
-    lat = np.tile(np.arange(0.5, ny) * 180.0 / ny - 90.0, (nx, 1)).T
-    lon = np.tile(np.arange(0.5, nx) * 360.0 / nx, (ny, 1))
+    dlon = 2.0 * np.pi / nx
+    latd = np.tile(np.arange(0.5, ny) * 180.0 / ny - 90.0, (nx, 1)).T
+    lond = np.tile(np.arange(0.5, nx) * 360.0 / nx, (ny, 1))
+    latr = np.deg2rad(latd)
+    lonr = np.deg2rad(lond)
     contents_info = {"aftmap": "AFT Baseline Map.",
                      "mask": "Region of Data Assimilation.",
                      "vlat": "Theta Component of flows at the surface.",
@@ -127,6 +129,25 @@ class AFTmap:
         """
         return self.map_list
 
+    # ============================================================
+    # Data attributes associated with file
+    # ============================================================
+    @property
+    def time(self) -> str:
+        if self.filetype == "aftmap":
+            return self.metadata["map_date"]
+        elif self.filetype == "dat":
+            _time = Time(dt.datetime.strptime(
+                self.name, self.date_fmt))
+        elif self.filetype == "hipft":
+            _time = self.timestamp
+            return _time
+
+    @property
+    def ymd(self) -> tuple:
+        year, month, day = self.time.split("-")[0:3]
+        return year, month, day[0:2]
+
     @property
     def aftmap(self) -> np.ndarray:
         """
@@ -160,9 +181,6 @@ class AFTmap:
         """
         Get the mask data.
 
-        Returns:
-        - mask (numpy.ndarray): Mask data.
-
         Returns
         -------
         mask: ndarray
@@ -181,9 +199,6 @@ class AFTmap:
     def magmap(self) -> np.ndarray:
         """
         Get the hmi assimilated data if available.
-
-        Returns:
-        - magmap (numpy.ndarray): Magmap data.
 
         Returns
         -------
@@ -219,8 +234,10 @@ class AFTmap:
         """
         Get vlon data.
 
-        Returns:
-        - vlon (numpy.ndarray): Vlon data.
+        Returns
+        -------
+        vlon: ndarray[Any, dtype[Any]]
+        Vlon data.
         """
         if "vlon" in self.map_list:
             with hdf.File(self.file) as fl:
@@ -229,6 +246,9 @@ class AFTmap:
             vlon = None
         return vlon
 
+    # ============================================================
+    # Metadata and header from AFT maps
+    # ============================================================
     @property
     def metadata(self) -> dict[str, Any]:
         """
@@ -265,22 +285,6 @@ class AFTmap:
         return header
 
     @property
-    def time(self) -> str:
-        if self.filetype == "aftmap":
-            return self.metadata["map_date"]
-        elif self.filetype == "dat":
-            _time = Time(dt.datetime.strptime(
-                self.name, self.date_fmt))
-        elif self.filetype == "hipft":
-            _time = self.timestamp
-            return _time
-
-    @property
-    def ymd(self) -> tuple:
-        year, month, day = self.time.split("-")[0:3]
-        return year, month, day[0:2]
-
-    @property
     def info(self) -> dict[str, Any]:
         """
         Get additional information.
@@ -301,7 +305,100 @@ class AFTmap:
             info = None
         return info
 
-    def convert(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True):
+    # ============================================================
+    # Field parameters from AFT maps;
+    # Polar field and dipole moments
+    # ============================================================
+
+    def polarfield(self, monopole_corr: bool = True, latlim: float = 60, **kwargs):
+        """
+        A helper function which returns the the polar fields for nortjern hemisphere and southern
+        hemisphere in the given latitude limits.
+
+        Parameters
+        ----------
+        monopole_corr: bool
+        Whether to apply a monopole correction to the AFT map or not. Defaults to True.
+        latlim: float
+        Latitude range in which polar field will be calculated. Defaults to 60.
+        kwargs: dict
+        Additional keyword.
+
+        Returns
+        -------
+        pf: list
+        2 dimensional array of type list.
+
+        """
+        coslat = np.cos(self.latr)
+        _aftmap = self.aftmap
+        if monopole_corr:
+            _mp = (_aftmap * coslat).sum() / coslat.sum()
+            _aftmap = _aftmap - _mp
+
+        _aftmap = _aftmap.mean(axis=1)
+        latstrip = self.latd[:, 0]
+        indN = np.where(latstrip > latlim)
+        indS = np.where(latstrip < -latlim)
+        latstrip = np.deg2rad(latstrip)
+        pfN = (_aftmap[indN] * np.cos(latstrip[indN])).sum() / np.cos(latstrip[indN]).sum()
+        pfS = (_aftmap[indS] * np.cos(latstrip[indS])).sum() / np.cos(latstrip[indS]).sum()
+        return [pfN, pfS]
+
+    def dipole(self, monopole_corr: object = True) -> tuple:
+        """
+        Function to calculate the axial and equatorial dipole moments of
+        the AFTMap object.
+        Parameters
+        ----------
+        monopole_corr: bool
+        Whether to correct monopole correction or not. Defaults to True.
+
+        Returns
+        -------
+        dipole: tuple
+        A tuple containing the axial and equatorial dipole moments.
+
+        """
+        coslat = np.cos(self.latr)
+        sinlat = np.sin(self.latr)
+        coslon = np.cos(self.lonr)
+        sinlon = np.sin(self.lonr)
+        _aftmap = self.aftmap
+        if monopole_corr:
+            _mp = (_aftmap * coslat).sum() / coslat.sum()
+            _aftmap = _aftmap - _mp
+
+        # Axial dipole
+        _adipole = (3.0 / (4.0 * np.pi)) * np.sum(_aftmap * coslat * sinlat) * self.dlat * self.dlon
+
+        # Equtorial Dipole
+        _edipolex = (3.0 / (4.0 * np.pi)) * np.sum(_aftmap * sinlat * sinlat * coslon) * self.dlat * self.dlon
+        _edipoley = (3.0 / (4.0 * np.pi)) * np.sum(_aftmap * sinlat * sinlat * sinlon) * self.dlat * self.dlon
+        _edipole = np.hypot(_edipolex, _edipoley)
+        return _adipole, _edipole
+
+    @property
+    def pfN(self):
+        return self.polarfield()[0]
+
+    @property
+    def pfS(self):
+        return self.polarfield()[1]
+
+    @property
+    def ADP(self):
+        return self.dipole()[0]
+
+    @property
+    def EDP(self):
+        return self.dipole()[1]
+
+    # ============================================================
+    # Conversion of AFT map in various formats
+    # ============================================================
+
+    def convert(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True, **kwargs) -> None:
         """
         Function to convert all the files in the given directory and save them in
         outpath directory with the proper directory structure.
@@ -313,6 +410,10 @@ class AFTmap:
         outpath: str, optionals
         The path to save the converted files.
         verbose:bool, optionals
+
+        Returns
+        -------
+        object
         Whether to show progress.
         """
         if self.filetype == "aftmap":
@@ -323,10 +424,16 @@ class AFTmap:
                 hdu.writeto(outpath, overwrite=True)
                 if verbose:
                     print(f"Output written to {outpath}.")
+            elif convert_to == "png":
+                show_mask = kwargs["show_mask"] if "show_mask" in kwargs else False
+                fig, ax = self.plot(show_mask=show_mask, save=True, outpath=outpath)
             else:
                 print("No implemented Yet.")
 
-    def plot(self, show_mask: bool = True, save: bool = False) -> tuple:
+    # ============================================================
+    # Visulaisation of AFT maps;
+    # ============================================================
+    def plot(self, show_mask: bool = True, save: bool = False, outpath=None) -> tuple:
         """
         Display or save the AFT map visualization.
 
@@ -340,6 +447,8 @@ class AFTmap:
 
         Parameters
         ----------
+        outpath: str
+        The path to save the.
         show_mask: bool, optional
         Whether to show the mask of the AFT map. Defaults to True
         save: bool, optional
@@ -378,11 +487,28 @@ class AFTmap:
         ax.set_title(self.time)
 
         if save:
-            plt.savefig("data/" + "".join(self.name.split(".")[:-1]) + ".png")
-            print("data/" + "".join(self.name.split(".")[:-1]) + ".png")
+            if outpath is not None:
+                plt.savefig(f"{outpath}/" + "".join(self.name.split(".")[:-1]) + ".png")
+            else:
+                plt.savefig("".join(self.name.split(".")[:-1]) + ".png")
+            plt.close()
         else:
             plt.show()
         return fig, ax
+
+    # ============================================================
+    # Special functions for AFT maps;
+    # ============================================================
+
+    def __repr__(self):
+        """
+        String represenation of the AFTMap object.
+        Returns
+        -------
+        str: str
+        String representation of the AFTMap object.
+        """
+        return f"AFTMap(time={self.time}, filtype={self.filetype})"
 
     def __str__(self) -> str:
         """
@@ -414,9 +540,9 @@ class AFTmap:
         return "-" * 85
 
 
-class AFTload:
+class AFTmaps:
     """
-        A class for loading AFT maps from files.
+        A class for loading AFT maps from a directory.
 
         Attributes:
         - path (str): The path to the directory containing AFT map files.
@@ -528,7 +654,16 @@ class AFTload:
         for _s in _stats.keys():
             print("%-10s: %-30s" % (_s, _stats.get(_s)))
 
-    def convert_all(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True):
+    def __len__(self) -> int:
+        """
+
+        Returns
+        -------
+
+        """
+        return len(self.filelist)
+
+    def convert_all(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True, **kwargs):
         """
         Convert all loaded AFT map files to the specified format.
 
@@ -545,11 +680,14 @@ class AFTload:
             mapobj = AFTmap(_file)
             yr, mo, day = mapobj.ymd
             _outpath = os.path.join(outpath, str(yr) + "/" + str(mo))
+            _filename = os.path.splitext(os.path.basename(_file))[0] + "." + convert_to
             if not os.path.exists(_outpath):
                 os.makedirs(_outpath, exist_ok=True)
-            _filename = os.path.splitext(os.path.basename(_file))[0] + "." + convert_to
-            _filename = os.path.join(_outpath, _filename)
-            mapobj.convert(convert_to=convert_to, verbose=False, outpath=_filename)
+            if convert_to == "png":
+                mapobj.convert(convert_to=convert_to, verbose=False, outpath=_outpath, **kwargs)
+            else:
+                _filename = os.path.join(_outpath, _filename)
+                mapobj.convert(convert_to=convert_to, verbose=False, outpath=_filename, **kwargs)
             if verbose:
                 frac = float(i + 1) / len(self.filelist) * 100
                 print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
