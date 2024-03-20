@@ -1,5 +1,4 @@
 from typing import Tuple, Any
-
 import h5py as hdf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,8 +9,8 @@ from astropy.io import fits
 import os
 from pathlib import Path
 from sunpy.map.header_helper import make_heliographic_header
-from sunpy.coordinates.sun import L0
 from sunpy.coordinates import get_earth
+from aftpy.utilities import file_search
 
 from numpy import ndarray, dtype
 
@@ -19,32 +18,10 @@ this_directory = Path(__file__).parent
 import sunpy.visualization.colormaps
 
 try:
-    plt.style.use(f'{this_directory}/bkj_style.mplstyle')
+    plt.style.use(f'{this_directory}/aftstyle.mplstyle')
 except Warning:
     plt.style.use('default')
     print("Using default matplotlib style.")
-
-
-def file_search(path: str, fileext: str = None) -> np.ndarray:
-    """
-       Search for files with the specified file extension in the given directory.
-
-    Parameters
-    ----------
-    path: str
-    The directory in which the given file will be searched.
-    fileext: str
-    The file extension to be searched for. Defaults to "" (no filtering)
-    """
-    files = []
-    for dr, _, file in os.walk(path):
-        for f in file:
-            if fileext is None:
-                files.append(os.path.join(dr, f))
-            elif f.endswith(fileext):
-                files.append(os.path.join(dr, f))
-    return np.sort(np.array(files))
-
 
 class AFTmap:
     """
