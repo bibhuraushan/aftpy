@@ -29,24 +29,31 @@ to read a single **aftmap file** or load all the files from a given directory.
 
 ## aftmap module
 
-The `aftmap` module also provides two Python classes `AFTmap` and `AFTload`. The `AFTmap` class
+The `aftmap` module also provides two Python classes `AFTmap` and `AFTmaps` (earlier `AFTload`). The `AFTmap` class
 provides an interface to read a single H5 **AFTmap** file and provides you the functions and instances 
-to get the information and plot the data. The other class `AFTload` provides the interface to load 
+to get the information and plot the data. The other class `AFTmaps` provides the interface to load 
 all the data from a directory and provide the instances and function to know about the loaded data. It also
-provides a function to convert all the loaded data into **FITS** files.
+provides a function to convert all the loaded data into **FITS** as well as many other formats.
 
 ### AFTmap Class
 
-Coming soon. 
+#### Attributes
+- `filename` (str): The full file path name of the AFT file.
+- `filetype` (str): The file type of the AFT map files (e.g., "aftmap", "dat").
+- `date_fmt` (str): The date format string used to parse timestamps from filenames.
+- `timestamp` (str): Timestamp for the file if the file doesnot contain the date.
+   Specially in case of `HipFT` map.
 
-### AFTload Class
+Will be updated soon. 
+
+### AFTmaps Class
 
 A class for loading all AFT maps from directory.
 
 #### Attributes
 
 - `path` (str): The path to the directory containing AFT map files.
-- `filetype` (str): The file extension of the AFT map files (e.g., "h5").
+- `filetype` (str): The file type of the AFT map files (e.g., "h5").
 - `date_fmt` (str): The date format string used to parse timestamps from filenames.
 - `filelist` (list): A list of file paths to AFT map files in the specified directory.
 - `filenames` (numpy.ndarray): An array of filenames extracted from the filelist.
@@ -64,7 +71,7 @@ A class for loading all AFT maps from directory.
 import aftpy.aftmap as aft
 
 # Initialize AFTload object
-loader = aft.AFTload(path="/path/to/aft/maps", filetype="h5")
+loader = aft.AFTmaps(path="/path/to/aft/maps", filetype="h5")
 
 # Convert all AFT map files to FITS format to '/path/to/converted/maps'
 loader.convert_all(convert_to="fits", outpath="/path/to/converted/maps", verbose=True)
