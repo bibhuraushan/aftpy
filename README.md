@@ -24,10 +24,14 @@ python setup.py install
 
 ## Descriptions
 
+---
+
 `aftpy` provides two important Python modules named `aftmap` and `aftgetdata`. These modules can be used
 to read a single **aftmap file** or load all the files from a given directory.
 
 ## aftmap module
+
+---
 
 The `aftmap` module also provides two Python classes `AFTmap` and `AFTmaps` (earlier `AFTload`). The `AFTmap` class
 provides an interface to read a single H5 **AFTmap** file and provides you the functions and instances 
@@ -36,6 +40,8 @@ all the data from a directory and provide the instances and function to know abo
 provides a function to convert all the loaded data into **FITS** as well as many other formats.
 
 ### AFTmap Class
+
+---
 
 #### Attributes
 - `filename` (str): The full file path name of the AFT file.
@@ -67,6 +73,8 @@ A class for loading all AFT maps from directory.
 
 #### Example Usage
 
+---
+
 ```python
 import aftpy.aftmap as aft
 
@@ -80,7 +88,11 @@ loader.convert_all(convert_to="fits", outpath="/path/to/converted/maps", verbose
 
 ## aftgetdata module
 
+---
+
 ### AFTdownload Class
+
+---
 
 A class for downloading AFT map files from a specified URL.
 
@@ -112,6 +124,8 @@ A class for downloading AFT map files from a specified URL.
 
 
 #### Example Usage
+
+---
 
 ```python
 import aftpy.getaftdata as aftget
