@@ -6,10 +6,12 @@ import datetime as dt
 from astropy.time import Time
 import astropy.units as u
 from astropy.io import fits
+import tqdm as tq
 import os
 from pathlib import Path
 from sunpy.map.header_helper import make_heliographic_header
 from sunpy.coordinates import get_earth
+import sunpy.sun.constants as constants
 from aftpy.utilities import file_search
 
 from numpy import ndarray, dtype
@@ -22,6 +24,7 @@ try:
 except Warning:
     plt.style.use('default')
     print("Using default matplotlib style.")
+
 
 class AFTmap:
     """
@@ -356,19 +359,71 @@ class AFTmap:
         return _adipole, _edipole
 
     @property
+    def area(self):
+        """
+        Calculate the area of each pixel grids.
+        Returns
+        -------
+        area : ndarray
+        The area of each pixel grids.
+        """
+        R = constants.radius.value * 100.0
+        area = (2.0 * np.pi * R / 1024.0) * (2.0 * np.pi * R / 1024.0) * np.cos(self.latr)
+        return area
+
+    @property
+    def flux(self):
+        """
+        Flux of each pixel grids.
+        Returns
+        -------
+        flux : ndarray
+        The flux of each pixel grids.
+        """
+        return self.aftmap * self.area
+
+    @property
     def pfN(self):
+        """
+        Polar field for Northern Hemisphere.
+        Returns
+        -------
+        pfN: float
+        The polar field for Northern Hemisphere.
+        """
         return self.polarfield()[0]
 
     @property
     def pfS(self):
+        """
+        Polar field for Southern Hemisphere.
+        Returns
+        -------
+        pfS: float
+        The polar field for Southern Hemisphere.
+        """
         return self.polarfield()[1]
 
     @property
     def ADP(self):
+        """
+        ADP of the Sun.
+        Returns
+        -------
+        adp: float
+        ADP of the Sun.
+        """
         return self.dipole()[0]
 
     @property
     def EDP(self):
+        """
+        EDP of the Sun.
+        Returns
+        -------
+        EDP: float
+        EDP of the Sun.
+        """
         return self.dipole()[1]
 
     # ============================================================
@@ -668,3 +723,18 @@ class AFTmaps:
             if verbose:
                 frac = float(i + 1) / len(self.filelist) * 100
                 print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
+
+    def generate_parameters(self, outfile=None):
+        if outfile is None:
+            outfile = dt.datetime.now().strftime("AFTpara_%Y%m%d_%H%M.csv")
+        fl = open(outfile, "w")
+        fl.write("Time,pfN, pfS, ADP, EDP,Flux\n")
+        with tq.tqdm(total=len(self)) as pbar:
+            for _file in self.filelist:
+                mapobj = AFTmap(_file)
+                tflux = round(np.abs(mapobj.flux).sum(), 3)
+                fl.write(f"{mapobj.time},{mapobj.pfN:.3f},"
+                         f"{mapobj.pfS:.3f},{mapobj.ADP:.3f},{mapobj.EDP:.3f},{tflux:.3E}\n")
+                pbar.update()
+        print(f"AFT parameters are saved to {outfile}.")
+
