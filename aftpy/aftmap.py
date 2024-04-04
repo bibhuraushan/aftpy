@@ -3,18 +3,22 @@ import h5py as hdf
 import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
+import pandas as pd
 from astropy.time import Time
 import astropy.units as u
 from astropy.io import fits
-import tqdm as tq
+import time
 import os
 from pathlib import Path
 from sunpy.map.header_helper import make_heliographic_header
 from sunpy.coordinates import get_earth
 import sunpy.sun.constants as constants
 from aftpy.utilities import file_search
+from multiprocessing.pool import ThreadPool as Pool
+from multiprocessing import cpu_count
 
 from numpy import ndarray, dtype
+import tqdm as tq
 
 this_directory = Path(__file__).parent
 import sunpy.visualization.colormaps
@@ -318,8 +322,8 @@ class AFTmap:
 
         _aftmap = _aftmap.mean(axis=1)
         latstrip = self.latd[:, 0]
-        indN = np.where(latstrip > latlim)
-        indS = np.where(latstrip < -latlim)
+        indN = np.where(latstrip >= latlim)
+        indS = np.where(latstrip <= -latlim)
         latstrip = np.deg2rad(latstrip)
         pfN = (_aftmap[indN] * np.cos(latstrip[indN])).sum() / np.cos(latstrip[indN]).sum()
         pfS = (_aftmap[indS] * np.cos(latstrip[indS])).sum() / np.cos(latstrip[indS]).sum()
@@ -614,6 +618,7 @@ class AFTmaps:
         self.filelist = file_search(path, fileext=self._fileext[filetype])
         self.filenames = np.array([os.path.basename(f) for f in self.filelist])
         self.hipft_prop = hipft_prop
+        self.counts = len(self.filenames)
         if (filetype == "hipft") & (hipft_prop is None):
             raise Exception("HIPFT Time information not provided")
 
@@ -677,12 +682,8 @@ class AFTmaps:
         """
         Show the statistics of the loaded files.
         """
-        _stats = {}
-        _stats["RootDir"] = self.path
-        _stats["FileType"] = self.filetype
-        _stats["# Files"] = len(self.filelist)
-        _stats["T-Initial"] = self.timestamps[0]
-        _stats["T-End"] = self.timestamps[-1]
+        _stats = {"RootDir": self.path, "FileType": self.filetype, "# Files": len(self.filelist),
+                  "T-Initial": self.timestamps[0], "T-End": self.timestamps[-1]}
         for _s in _stats.keys():
             print("%-10s: %-30s" % (_s, _stats.get(_s)))
 
@@ -694,6 +695,9 @@ class AFTmaps:
 
         """
         return len(self.filelist)
+
+    def __repr__(self):
+        return f"<AFTMaps(Path: {self.path}, Type: {self.filetype}, Total: {self.counts})>"
 
     def convert_all(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True, **kwargs):
         """
@@ -724,17 +728,64 @@ class AFTmaps:
                 frac = float(i + 1) / len(self.filelist) * 100
                 print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
 
-    def generate_parameters(self, outfile=None):
+    @staticmethod
+    def _generate_para(file):
+        """
+        A helper function to generate a aft parameters for a given file.
+        Parameters
+        ----------
+        file: str
+        The name of the file to generate the aft parameters.
+
+        Returns
+        -------
+        para: tuple
+        A tuple containing the all the AFT parameters for the file.
+
+        """
+        mapobj = AFTmap(file)
+        tflux = round(np.abs(mapobj.flux).sum(), 3)
+        pf = mapobj.polarfield()
+        dp = mapobj.dipole()
+        para = (mapobj.time, *pf, *dp, tflux)
+        return para
+
+    def generate_parameters(self, outfile=None, nthreds=None, verbose=True, monopole_corr=True):
+        """
+        Function to generate AFT data for all the files.
+        Parameters
+        ----------
+        monopole_corr: bool, optional
+        Whether to apply a monopole correction to the data. Default is True
+        outfile: str, optional
+        The file in which data is to be saved. Defaults to None.
+        nthreds: int, optional
+        The number of thredds to use for the calculations. Defaults to None.
+        verbose: bool, optional
+        Show progress. Defaults to True.
+
+        Returns
+        -------
+        df: pd.DataFrame
+        The dataframe containing the AFT parameters for the given files.
+
+        """
+        if nthreds is None:
+            nthreds = cpu_count() - 1
+
         if outfile is None:
             outfile = dt.datetime.now().strftime("AFTpara_%Y%m%d_%H%M.csv")
-        fl = open(outfile, "w")
-        fl.write("Time,pfN, pfS, ADP, EDP,Flux\n")
-        with tq.tqdm(total=len(self)) as pbar:
-            for _file in self.filelist:
-                mapobj = AFTmap(_file)
-                tflux = round(np.abs(mapobj.flux).sum(), 3)
-                fl.write(f"{mapobj.time},{mapobj.pfN:.3f},"
-                         f"{mapobj.pfS:.3f},{mapobj.ADP:.3f},{mapobj.EDP:.3f},{tflux:.3E}\n")
-                pbar.update()
-        print(f"AFT parameters are saved to {outfile}.")
-
+        result = []
+        tint = time.time()
+        bar_format = '{desc}: {percentage:3.2f}%|{bar}{r_bar}'
+        with Pool(nthreds) as pool:
+            for _para in tq.tqdm(pool.imap(self._generate_para, self.filelist),
+                                 bar_format=bar_format, total=self.counts):
+                result.append(_para)
+        if verbose:
+            print(f"Completed in {int(time.time() - tint)} seconds.")
+            print(f"AFT parameters are saved to {outfile}.")
+        df = pd.DataFrame(result, columns=["Time", "PolarN", "PolarS", "ADP", "EDP", "TotalFlux"])
+        if outfile is not None:
+            df.to_csv(outfile, float_format="%.2g", index=False)
+        return df
