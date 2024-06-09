@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.h5
+*.csv
 
 # C extensions
 *.so
@@ -14,7 +16,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+lib
 lib64/
 parts/
 sdist/

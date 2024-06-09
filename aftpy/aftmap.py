@@ -9,25 +9,22 @@ import astropy.units as u
 from astropy.io import fits
 import time
 import os
+import sunpy.sun.constants as constants
+import tqdm as tq
+import sunpy.visualization.colormaps
 from pathlib import Path
 from sunpy.map.header_helper import make_heliographic_header
 from sunpy.coordinates import get_earth
-import sunpy.sun.constants as constants
-from aftpy.utilities import file_search
+from sunpy.coordinates.sun import carrington_rotation_number
+from .utilities import file_search, h52df, df2h5
 from multiprocessing.pool import ThreadPool as Pool
 from multiprocessing import cpu_count
-
+from .visulalization import Visulalization
 from numpy import ndarray, dtype
-import tqdm as tq
 
 this_directory = Path(__file__).parent
-import sunpy.visualization.colormaps
 
-try:
-    plt.style.use(f'{this_directory}/aftstyle.mplstyle')
-except Warning:
-    plt.style.use('default')
-    print("Using default matplotlib style.")
+__all__ = ['AFTmap', 'AFTmaps']
 
 
 class AFTmap:
@@ -62,6 +59,7 @@ class AFTmap:
                      "vlat": "Theta Component of flows at the surface.",
                      "vlon": "Phi Component of flows at the surface.",
                      "magmap": "Assimilated magnetogram in Carrington Grid."}
+    fileext = {"aftmap": "h5", "oldaft": "dat", "hipft": "h5"}
 
     def __init__(self, file: str, filetype: str = "aftmap",
                  date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
@@ -86,7 +84,6 @@ class AFTmap:
         self.date_fmt = date_fmt
         self.map_list = None
         self.timestamp = timestamp
-        self.fileext = {"aftmap": "h5", "oldaft": "dat", "hipft": "h5"}
 
         if self.filetype == "aftmap":
             with hdf.File(self.file) as fl:
@@ -120,9 +117,9 @@ class AFTmap:
     def time(self) -> str:
         if self.filetype == "aftmap":
             return self.metadata["map_date"]
-        elif self.filetype == "dat":
+        elif self.filetype == "oldaft":
             _time = Time(dt.datetime.strptime(
-                self.name, self.date_fmt))
+                self.name, self.date_fmt), scale="utc")
         elif self.filetype == "hipft":
             _time = self.timestamp
             return _time
@@ -592,7 +589,7 @@ class AFTmaps:
         - stats(): Prints statistics about the loaded AFT map files.
     """
 
-    def __init__(self, path: str = ".", filetype: str = "aftmap",
+    def __init__(self, path: str | list | tuple = ".", filetype: str = "aftmap",
                  date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
                  verbose: bool = True, hipft_prop: dict = None):
         """
@@ -615,15 +612,49 @@ class AFTmaps:
         self.filetype = filetype
         self.date_fmt = date_fmt
         self._fileext = {"aftmap": "h5", "oldaft": "dat", "hipft": "h5"}
-        self.filelist = file_search(path, fileext=self._fileext[filetype])
+
+        # Whether it is a list of paths or one path
+        if isinstance(path, (list, tuple)):
+            filelist = np.array([])
+            for _path in path:
+                _filelist = file_search(_path, fileext=self._fileext[filetype])
+                filelist = np.append(filelist, _filelist)
+            self.filelist = filelist
+        else:
+            self.filelist = file_search(path, fileext=self._fileext[filetype])
+
         self.filenames = np.array([os.path.basename(f) for f in self.filelist])
         self.hipft_prop = hipft_prop
         self.counts = len(self.filenames)
         if (filetype == "hipft") & (hipft_prop is None):
             raise Exception("HIPFT Time information not provided")
 
+        # Carrington Parameters
+        self._crn = np.ceil(carrington_rotation_number(self.timestamps)).astype(int)
+        self._CRN = np.unique(self._crn).astype(int)
+
         if verbose:
             self.stats()
+
+    def __len__(self) -> int:
+        """
+        Length of the object.
+        Returns
+        -------
+        n: int
+        Length of the object.
+        """
+        return len(self.filelist)
+
+    def __repr__(self):
+        return f"<AFTMaps(Path: {self.path}, Type: {self.filetype}, Total: {self.counts})>"
+
+    def __str__(self):
+        self.stats()
+
+    @property
+    def crn(self):
+        return self._CRN
 
     @property
     def aftmaps(self):
@@ -687,18 +718,6 @@ class AFTmaps:
         for _s in _stats.keys():
             print("%-10s: %-30s" % (_s, _stats.get(_s)))
 
-    def __len__(self) -> int:
-        """
-
-        Returns
-        -------
-
-        """
-        return len(self.filelist)
-
-    def __repr__(self):
-        return f"<AFTMaps(Path: {self.path}, Type: {self.filetype}, Total: {self.counts})>"
-
     def convert_all(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True, **kwargs):
         """
         Convert all loaded AFT map files to the specified format.
@@ -750,11 +769,14 @@ class AFTmaps:
         para = (mapobj.time, *pf, *dp, tflux)
         return para
 
-    def generate_parameters(self, outfile=None, nthreds=None, verbose=True, monopole_corr=True):
+    def generate_parameters(self, outfile=None, nthreds=None,
+                            verbose=True, monopole_corr=True, use_saved=True):
         """
         Function to generate AFT data for all the files.
         Parameters
         ----------
+        use_saved: bool, optional
+        Whether to relaod form saved file or not. Defaults to True.
         monopole_corr: bool, optional
         Whether to apply a monopole correction to the data. Default is True
         outfile: str, optional
@@ -773,6 +795,16 @@ class AFTmaps:
         if nthreds is None:
             nthreds = cpu_count() - 1
 
+        save_file = os.path.join(this_directory, ".aftpara.h5")
+        save_exist = os.path.isfile(save_file)
+
+        if use_saved & save_exist:
+            df = h52df(save_file)
+            if (df.Time.iloc[-1] == self.timestamps[-1]) and (self.counts == df.shape[0]):
+                return df
+            elif verbose:
+                print("WARNING: Saved data is outdated, skipping saved data.")
+
         if outfile is None:
             outfile = dt.datetime.now().strftime("AFTpara_%Y%m%d_%H%M.csv")
         result = []
@@ -785,7 +817,38 @@ class AFTmaps:
         if verbose:
             print(f"Completed in {int(time.time() - tint)} seconds.")
             print(f"AFT parameters are saved to {outfile}.")
-        df = pd.DataFrame(result, columns=["Time", "PolarN", "PolarS", "ADP", "EDP", "TotalFlux"])
+        df = pd.DataFrame(result, columns=["Time", "PolarN", "PolarS", "ADM", "EDM", "TotalFlux"])
+        df2h5(df, save_file)
         if outfile is not None:
             df.to_csv(outfile, float_format="%.2g", index=False)
         return df
+
+    def get_crmap(self, cr_number):
+        if cr_number not in self._CRN:
+            raise ValueError("The given Carrington Rotation is Not present in the data.")
+
+        ind = np.where(self._crn == cr_number)
+        crmap = 0
+        for _fl in self.filelist[ind]:
+            aftobj = AFTmap(_fl, filetype=self.filetype, date_fmt=self.date_fmt)
+            crmap = crmap + aftobj.aftmap
+        crmap = crmap / ind[0].size
+        return crmap
+
+    def cravgmap(self, verbose=False, outfile=None):
+        save_file = os.path.join(this_directory, ".bflydata.h5")
+        save_exist = os.path.isfile(save_file)
+        # if use_saved & save_exist:
+
+        # Get carrington Numbers
+        crn = self._CRN
+        crn0 = crn.min()
+        bar_format = '{desc}: {percentage:3.2f}%|{bar}{r_bar}'
+        bflymap = np.zeros((512, len(crn)))
+        for _crn in tq.tqdm(crn, bar_format=bar_format, total=len(crn)):
+            bflymap[:, _crn - crn0] = self.get_crmap(_crn).mean(axis=1)
+        return bflymap
+
+    @property
+    def visualize(self, **kwargs):
+        return Visulalization(self, **kwargs)

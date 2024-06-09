@@ -1,15 +1,19 @@
 from setuptools import setup
 # read the contents of your README file
 from pathlib import Path
+
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='aftpy',
-    version='1.1.0',
+    version='2.0.0',
     packages=['aftpy'],
     include_package_data=True,
     package_data={"style": ["bkj_style.mplstyle", "list_of_files.csv"]},
+    entry_points={
+        'console_scripts': ['aftview = aftpy.cmdtools:aftview'],
+    },
     url='https://github.com/bibhuraushan/aftpy/',
     license='MIT',
     author='Bibhuti Kumar Jha',
@@ -27,8 +31,7 @@ setup(
         'pandas'
     ],
     classifiers=[
-        'License :: OSI Approved :: MIT License',  # Again, pick a license,
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
+        'License :: MIT License',  # Again, pick a license,
+        'Programming Language :: Python',
     ],
 )

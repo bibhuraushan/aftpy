@@ -1,5 +1,6 @@
-from .aftmap import AFTmap, AFTmaps
+from .aftmap import *
 from .getaftdata import AFTdownload
+from .visulalization import Visulalization
 
 __author__ = 'Bibhuti Kumar Jha'
 __email__ = 'bibhuraushan1@gmail.com'
