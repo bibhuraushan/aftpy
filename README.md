@@ -1,3 +1,6 @@
+
+![Python](https://skillicons.dev/icons?i=py)
+
 # AFTpy
 
 `AFTPy` offers a comprehensive solution for
