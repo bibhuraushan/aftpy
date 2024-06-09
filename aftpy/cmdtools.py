@@ -20,6 +20,10 @@ def get_arg_file():
     parser.add_argument("-s", "--save",
                         help="Save image as png.",
                         action="store_true")
+    parser.add_argument("-sm", "--show-mask",
+                        default=True,
+                        help="Show mask image.",
+                        action="store_true")
     return parser.parse_args()
 
 
@@ -58,6 +62,10 @@ def get_arg_dir():
     parser.add_argument("-v", "--verbose",
                         help="Show conversion progress.",
                         action="store_true")
+    parser.add_argument("-sm", "--show-mask",
+                        default=True,
+                        help="Show mask image.",
+                        action="store_true")
     return parser.parse_args()
 
 
@@ -71,9 +79,9 @@ def aftview():
     args = get_arg_file()
     aftmap = AFTmap(args.filename)
     if args.save:
-        aftmap.plot(save=True)
+        aftmap.plot(save=True, show_mask=args.show_mask)
     else:
-        aftmap.plot(save=False)
+        aftmap.plot(save=False, show_mask=args.show_mask)
 
 
 def aftconvertor():
@@ -94,7 +102,7 @@ def aftconvertor():
         else:
             outdir = os.path.abspath(args.outdir)
         print(f"Output saved in: {os.path.abspath(outdir)}")
-        aftmaps.convert_all(convert_to=args.convert_to, outpath=outdir, verbose=args.verbose)
+        aftmaps.convert_all(convert_to=args.convert_to, outpath=outdir, verbose=args.verbose, show_mask=args.show_mask)
     except OSError:
         print("Command returned with Exit Status 1")
 
