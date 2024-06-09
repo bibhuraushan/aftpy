@@ -12,7 +12,8 @@ setup(
     include_package_data=True,
     package_data={"style": ["bkj_style.mplstyle", "list_of_files.csv"]},
     entry_points={
-        'console_scripts': ['aftview = aftpy.cmdtools:aftview'],
+        'console_scripts': ['aftview = aftpy.cmdtools:aftview',
+                            'aftconvertor = aftpy.cmdtools:aftconvertor'],
     },
     url='https://github.com/bibhuraushan/aftpy/',
     license='MIT',
