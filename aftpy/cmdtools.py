@@ -102,7 +102,7 @@ def aftconvertor():
         else:
             outdir = os.path.abspath(args.outdir)
         print(f"Output saved in: {os.path.abspath(outdir)}")
-        aftmaps.convert_all(convert_to=args.convert_to, outpath=outdir, verbose=args.verbose, show_mask=args.show_mask)
+        aftmaps.convert_all(convert_to=args.convert_to, outpath=outdir, show_mask=args.show_mask)
     except OSError:
         print("Command returned with Exit Status 1")
 
