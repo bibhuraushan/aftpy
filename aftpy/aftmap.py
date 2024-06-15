@@ -739,10 +739,10 @@ class AFTmaps:
             if not os.path.exists(_outpath):
                 os.makedirs(_outpath, exist_ok=True)
             if convert_to == "png":
-                mapobj.convert(convert_to=convert_to, verbose=False, outpath=_outpath, **kwargs)
+                mapobj.convert(convert_to=convert_to, verbose=self.verbose, outpath=_outpath, **kwargs)
             else:
                 _filename = os.path.join(_outpath, _filename)
-                mapobj.convert(convert_to=convert_to, verbose=False, outpath=_filename, **kwargs)
+                mapobj.convert(convert_to=convert_to, verbose=self.verbose, outpath=_filename, **kwargs)
             if self.verbose:
                 frac = float(i + 1) / len(self.filelist) * 100
                 print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
