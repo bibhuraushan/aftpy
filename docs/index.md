@@ -1,17 +1,27 @@
-# Welcome to MkDocs
+![Python](https://skillicons.dev/icons?i=py)
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+# AFTpy
+![aftlogo](../aftpy_logo.png)
 
-## Commands
+`AFTPy` offers a comprehensive solution for
+analyzing and downloading Advective Flux Transport (AFT) data,
+streamlining the process of data downloading in parallel and
+also facilitating the conversion of H5 files into the most popular
+FITS file format or various other formats with ease.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
 
-## Project layout
+## Installation
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+### From PyPI
+
+```shell
+pip install aftpy
+```
+
+### From source
+
+```shell
+git clone git@github.com:bibhuraushan/aftpy.git
+cd aftpy
+python setup.py install
+```
