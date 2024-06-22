@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-mkdocs" class="md-skip">
+        <a href="#aftpy" class="md-skip">
           Skip to content
         </a>
       
@@ -200,20 +200,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#commands" class="md-nav__link">
+  <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
-      Commands
+      Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-pypi" class="md-nav__link">
+    <span class="md-ellipsis">
+      From PyPI
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#project-layout" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#from-source" class="md-nav__link">
     <span class="md-ellipsis">
-      Project layout
+      From source
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -292,20 +307,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#commands" class="md-nav__link">
+  <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
-      Commands
+      Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-pypi" class="md-nav__link">
+    <span class="md-ellipsis">
+      From PyPI
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#project-layout" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#from-source" class="md-nav__link">
     <span class="md-ellipsis">
-      Project layout
+      From source
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -324,20 +354,22 @@
                   
 
 
-<h1 id="welcome-to-mkdocs">Welcome to MkDocs</h1>
-<p>For full documentation visit <a href="https://www.mkdocs.org">mkdocs.org</a>.</p>
-<h2 id="commands">Commands</h2>
-<ul>
-<li><code>mkdocs new [dir-name]</code> - Create a new project.</li>
-<li><code>mkdocs serve</code> - Start the live-reloading docs server.</li>
-<li><code>mkdocs build</code> - Build the documentation site.</li>
-<li><code>mkdocs -h</code> - Print help message and exit.</li>
-</ul>
-<h2 id="project-layout">Project layout</h2>
-<pre><code>mkdocs.yml    # The configuration file.
-docs/
-    index.md  # The documentation homepage.
-    ...       # Other markdown pages, images and other files.
+<p><img alt="Python" src="https://skillicons.dev/icons?i=py" /></p>
+<h1 id="aftpy">AFTpy</h1>
+<p><img alt="aftlogo" src="../aftpy_logo.png" /></p>
+<p><code>AFTPy</code> offers a comprehensive solution for
+analyzing and downloading Advective Flux Transport (AFT) data,
+streamlining the process of data downloading in parallel and
+also facilitating the conversion of H5 files into the most popular
+FITS file format or various other formats with ease.</p>
+<h2 id="installation">Installation</h2>
+<h3 id="from-pypi">From PyPI</h3>
+<pre><code class="language-shell">pip install aftpy
+</code></pre>
+<h3 id="from-source">From source</h3>
+<pre><code class="language-shell">git clone git@github.com:bibhuraushan/aftpy.git
+cd aftpy
+python setup.py install
 </code></pre>
 
 
