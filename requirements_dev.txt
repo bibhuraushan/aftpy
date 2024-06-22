@@ -9,6 +9,7 @@ twine
 click
 pytest
 pytest-runner
+sunpy[all]
 
 ipykernel
 livereload
