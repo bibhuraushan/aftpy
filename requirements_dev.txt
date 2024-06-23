@@ -2,7 +2,6 @@ black
 black[jupyter]
 build
 bump-my-version
-codespell
 wheel
 flake8
 twine

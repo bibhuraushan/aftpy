@@ -1,16 +1,73 @@
-site_name: AFTpy
+site_name: AFTpy Python Package
+site_url: https://bibhuraushan.github.io/aftpy
+site_author: Bibhuti Kumar Jha
+
+# Repository
+repo_name: bibhuraushan/aftpy
+repo_url: https://github.com/bibhuraushan/aftpy
 
 theme:
   name: "material"
+  logo: aftpy_logo.png
+  palette:
+   - scheme: default
+     primary: teal
+     toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+     # Palette toggle for dark mode
+   - scheme: slate
+     primary: teal
+     toggle:
+         icon: material/brightness-4
+         name: Switch to light mode
+  font:
+     text: Roboto
+     code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.path
+    - navigation.tracking
+    - navigation.footer
+    - navigation.indexes
+    - toc.follow
+
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bibhuraushan/aftpy
 
 plugins:
 - mkdocstrings:
     handlers:
       python:
         options:
+          allow_inspection: false
           docstring_style: numpy
+          docstring_section_style: table
+          show_source: false
+          members_order: source
+          show_symbol_type_toc: true
+          merge_init_into_class: true
+          filters:
+            - "!^_"
+            - "!^__"
 
 nav:
-  - AFTpy: index.md
-  - AFTMap: aftmap.md
-  - GetAFTData: getaftdata.md
+  - Home: index.md
+  - AFT:
+      - aft/index.md
+      - About: aft/about.md
+  - AFTpy:
+      - aftpy/index.md
+      - AFTMap: aftpy/aftmap.md
+      - AFTmaps: aftpy/aftmaps.md
+      - GetAFTData: aftpy/getaftdata.md
+  - Getting Started:
+      - How to install: install.md
+      - Example Codes : example.md
+
+copyright: Copyright &copy; 2023 Bibhuti Kumar Jha
