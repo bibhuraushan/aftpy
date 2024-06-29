@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/bibhuraushan/aftpy/"
+Homepage = "https://bibhuraushan.github.io/aftpy"
 Repository = "https://github.com/me/spam.git"
 
 [project.entry-points.console_scripts]

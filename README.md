@@ -2,7 +2,7 @@
 ![Python](https://skillicons.dev/icons?i=py)
 
 # AFTpy
-![aftlogo](aftpy_logo.png)
+![aftlogo](https://github.com/bibhuraushan/aftpy/blob/main/aftpy_logo.png)
 
 `AFTPy` offers a comprehensive solution for
 analyzing and downloading Advective Flux Transport (AFT) data,
