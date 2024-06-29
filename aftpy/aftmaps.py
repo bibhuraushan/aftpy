@@ -1,4 +1,8 @@
-
+"""
+This class will initialize with getting all the list of files
+and create aftmap objects. This will alos provide methods to create
+butterfly diagram and generate AFT parameters for all the maps in the list.
+"""
 import h5py as hdf
 import numpy as np
 import datetime as dt
@@ -22,9 +26,8 @@ __all__ = ['AFTmaps']
 
 class AFTmaps:
     """
-        A class for loading all AFT maps from a given directory.
-        This class will initialize with getting all the list of files
-        and crete the time stamp and Carrington Rotation Number out of it.
+        A class for loading all AFT maps from a given directory or directories.
+
 
         Attributes
         ---------
@@ -42,9 +45,9 @@ class AFTmaps:
         Parameters
         ----------
         path:
-            The path to the AFT map file. Defaults to the current working directory.
+            The path or list of paths to the AFT map files. Defaults to the current working directory.
         filetype:
-            The file extension of the AFT map. Default to the "h5"
+            The file extension of the AFT map. Default to the "aftmap"
         date_fmt:
             The date format string. Defaults to the "AFTmap_%Y%m%d_%H%M.h5"
         verbose:
@@ -95,37 +98,42 @@ class AFTmaps:
         Returns
         -------
         n: int
-        Length of the object.
+            Length of the object.
         """
         return len(self.filelist)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<AFTMaps(Path: {self.path}, Type: {self.filetype}, Total: {self.counts})>"
 
-    def __str__(self):
+    def __str__(self) -> None:
         self.stats()
 
     @property
-    def crn(self):
+    def crn(self) -> np.ndarray:
         return self._CRN
 
     @property
-    def aftmaps(self):
+    def aftmaps(self) -> np.ndarray:
         """
         An itterator containing all the AFTmaps associated.
+
+        Yields
+        ------
+        aftmaps: AFTmaps
+            AFTmaps object itterators.
         """
         for _file in self.filelist:
             yield AFTmap(_file, date_fmt=self.date_fmt, filetype=self.filetype)
 
     @property
-    def timestamps(self):
+    def timestamps(self) -> Time:
         """
         To get timestamps for all files in the AFT map directory.
 
         Returns
         -------
-        object
-        List of timestamps corresponding to each AFT map in the directory.
+        timestamps: astropy.time.Time
+            List of timestamps corresponding to each AFT map in the directory (astropy.time.Time).
 
         """
         _timestamp = []
@@ -144,9 +152,8 @@ class AFTmaps:
 
         Returns
         -------
-        np.ndarray
-        List of all files in the AFTmaps directory.
-
+        filelist: np.ndarray
+            List of all files in the AFTmaps directory.
         """
         return self.filelist
 
@@ -156,13 +163,13 @@ class AFTmaps:
 
         Returns
         -------
-        np.ndarray
-        list of filenames.
+        filebasename: np.ndarray
+            List of files basenames.
 
         """
         return np.array(self.filenames)
 
-    def stats(self):
+    def stats(self) -> None:
         """
         Show the statistics of the loaded files.
         """
@@ -171,17 +178,16 @@ class AFTmaps:
         for _s in _stats.keys():
             print("%-10s: %-30s" % (_s, _stats.get(_s)))
 
-    def convert_all(self, convert_to: str = "fits", outpath: str = ".", **kwargs):
+    def convert_all(self, convert_to: str = "fits", outpath: str = ".", **kwargs) -> None:
         """
         Convert all loaded AFT map files to the specified format.
 
         Parameters
         ----------
         convert_to: str, optional
-        The output format to AFTMap to fits. Defaults to "fits"
+            The output format to AFTMap to fits. Defaults to "fits"
         outpath: str, optional
-        The directory in which to save the fits. Defaults to "."
-        Show progress. Defaults to True
+            The directory in which to save the fits. Defaults to "."
         """
         for _file, i in zip(self.filelist, range(len(self.filelist))):
             mapobj = AFTmap(_file)
@@ -200,18 +206,18 @@ class AFTmaps:
                 print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
 
     @staticmethod
-    def _generate_para(filelist):
+    def _generate_para(filelist: object) -> object:
         """
         A helper function to generate a aft parameters for a given file.
         Parameters
         ----------
         filelist: tuple
-        The name of the file to generate the aft parameters.
+            The name of the file to generate the aft parameters.
 
         Returns
         -------
         para: tuple
-        A tuple containing the all the AFT parameters for the file.
+            A tuple containing the all the AFT parameters for the file.
 
         """
         file, filetype, datefmt, monopole_corr = filelist
@@ -222,26 +228,23 @@ class AFTmaps:
         para = (mapobj.time, *pf, *dp, tflux)
         return para
 
-    def generate_parameters(self, outfile=None, nthreds=None,
-                            verbose=True, use_saved=True):
+    def generate_parameters(self, outfile: str = None, nthreds: int = None,
+                            use_saved: bool = True) -> pd.DataFrame:
         """
         Function to generate AFT data for all the files.
         Parameters
         ----------
         use_saved: bool, optional
-        Whether to relaod form saved file or not. Defaults to True.
-        Whether to apply a monopole correction to the data. Default is True
+            Whether to relaod form saved file or not. Defaults to True.
         outfile: str, optional
-        The file in which data is to be saved. Defaults to None.
+            The file in which data is to be saved. Defaults to None.
         nthreds: int, optional
-        The number of thredds to use for the calculations. Defaults to None.
-        verbose: bool, optional
-        Show progress. Defaults to True.
+            The number of thredds to use for the calculations. Defaults to None.
 
         Returns
         -------
         df: pd.DataFrame
-        The dataframe containing the AFT parameters for the given files.
+            The dataframe containing the AFT parameters for the given files.
 
         """
         if nthreds is None:
@@ -276,7 +279,20 @@ class AFTmaps:
         df2h5(df, save_file)
         return df
 
-    def get_crmap(self, cr_number):
+    def get_crmap(self, cr_number: int) -> np.ndarray:
+        """
+
+        Parameters
+        ----------
+        cr_number:
+            Carrington Map for a given Carrington Rotation Number.
+
+        Returns
+        -------
+        crmap: np.ndarray
+            Carrington Map for a given Carrington Rotation Number.
+
+        """
         if cr_number not in self._CRN:
             raise ValueError("The given Carrington Rotation is Not present in the data.")
 
@@ -288,7 +304,20 @@ class AFTmaps:
         crmap = crmap / ind[0].size
         return crmap
 
-    def cravgmap(self, use_saved=True):
+    def cravgmap(self, use_saved: bool = True) -> np.ndarray:
+        """
+
+        Parameters
+        ----------
+        use_saved:
+            Whether to relaod form saved file or not. Defaults to True.
+
+        Returns
+        -------
+        crmap: np.ndarray
+            Carrington Rotation Averaged Map for all the maps. Basically Butterfly Diagram.
+
+        """
         save_file = os.path.join(this_directory, ".bflydata.h5")
         save_exist = os.path.isfile(save_file)
         if use_saved & save_exist:
@@ -314,5 +343,13 @@ class AFTmaps:
         return bflymap
 
     @property
-    def visualize(self):
+    def visualize(self) -> Visulalization:
+        """
+
+        Returns
+        -------
+        Visulalization: Visulalization
+            AFTpy Visulalization object.
+
+        """
         return Visulalization(self)

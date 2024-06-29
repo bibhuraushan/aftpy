@@ -3,6 +3,7 @@ This the AFTmap Python Class which reads the AFT map data and
 provides various parameters for it. It also help to visualize
 AFTmap.
 """
+__all__ = ['AFTmap']
 
 from typing import Tuple, Any
 import h5py as hdf
@@ -19,8 +20,6 @@ from sunpy.coordinates import get_earth
 from numpy import ndarray, dtype
 
 this_directory = Path(__file__).parent
-
-__all__ = ['AFTmap']
 
 
 class AFTmap:
@@ -62,6 +61,19 @@ class AFTmap:
         Date format of the file. Default is "AFTmap_%Y%m%d_%H%M.h5"
     timestamp: dt.datetime, optional
         Timestamp of the file if filetype is "hipft". Default is none otherwise.
+
+    Methods
+    ---------
+    polarfield(self, monopole_corr: bool = True, latlim: float = 60, **kwargs) -> tuple:
+        Calculate the polar field of an AFTmap.
+
+    dipole(self, monopole_corr: object = True) -> tuple:
+        Calculate the dipole of an AFTmap.
+
+    convert(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True, **kwargs) -> None:
+        A conversion tool for AFTmap.
+    plot(self, show_mask: bool = True, save: bool = False, outpath: str = None) -> tuple:
+        Plot AFTmap data with color bar and timestamp.
 
     Examples
     ----------
@@ -105,6 +117,35 @@ class AFTmap:
             self.timestamp = Time(dt.datetime.today()).fits
         elif timestamp is not None:
             self.timestamp = Time(timestamp).fits
+
+    def __repr__(self):
+        """String represenation of the AFTMap object.
+        """
+        return f"AFTMap(time={self.time}, filtype={self.filetype})"
+
+    def __str__(self) -> str:
+        """Get a string representation of the object.
+        """
+        dct = self.metadata
+        dct1 = self.info
+        print(" " * 30 + f"{self.name}" + " " * 30)
+        prt = "-" * 85
+        if self.filetype == "aftmap":
+            print(prt)
+            print(" " * 36 + f"MAP CONTENTS" + " " * 37)
+            print(prt)
+            for _key in self.map_list:
+                print("%-10s: %-30s - %-30s" % (_key.upper(), "Array", self.contents_info[_key]))
+            print(prt)
+            print(" " * 39 + f"HEADER" + " " * 40)
+            print(prt)
+            for _key in self.info.keys():
+                print("%-10s: %-30s - %-30s" % (_key.upper(), dct[_key], dct1[_key]))
+        print(prt)
+        print(" " * 39 + f"AFT MAP" + " " * 40)
+        print(prt)
+        self.plot()
+        return prt
 
     @property
     def contents(self) -> list:
@@ -568,31 +609,3 @@ class AFTmap:
     # ============================================================
     # Special functions for AFT maps;
     # ============================================================
-
-    def __repr__(self):
-        """String represenation of the AFTMap object.
-        """
-        return f"AFTMap(time={self.time}, filtype={self.filetype})"
-
-    def __str__(self) -> str:
-        """Get a string representation of the object.
-        """
-        dct = self.metadata
-        dct1 = self.info
-        print(" " * 30 + f"{self.name}" + " " * 30)
-        if self.filetype == "aftmap":
-            print("-" * 85)
-            print(" " * 36 + f"MAP CONTENTS" + " " * 37)
-            print("-" * 85)
-            for _key in self.map_list:
-                print("%-10s: %-30s - %-30s" % (_key.upper(), "Array", self.contents_info[_key]))
-            print("-" * 85)
-            print(" " * 39 + f"HEADER" + " " * 40)
-            print("-" * 85)
-            for _key in self.info.keys():
-                print("%-10s: %-30s - %-30s" % (_key.upper(), dct[_key], dct1[_key]))
-        print("-" * 85)
-        print(" " * 39 + f"AFT MAP" + " " * 40)
-        print("-" * 85)
-        self.plot()
-        return "-" * 85

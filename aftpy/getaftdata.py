@@ -13,15 +13,12 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 
 
-def _download(args):
-    """
-    Internal function to download AFT map files.
-
-    Args:
-        args (tuple): Tuple containing URL and root path of the file to download.
-
-    Returns:
-        str: Message indicating whether the file was successfully downloaded or not.
+def _download(args: tuple):
+    """ Internal function to download AFT map files.
+    Parameters
+    ----------
+    args: `tuple`
+        Tuple containing URL and root path of the file to download.
     """
     url, path = args[0], args[1]
     filename = os.path.basename(url)
@@ -41,42 +38,37 @@ class AFTdownload:
     """
        A class for downloading AFT map files from a specified URL.
 
-       Attributes:
-           ncpu (int): Number of CPU cores to utilize for downloading files. Defaults to `cpu_count() - 1`.
-           dt (module): Alias for the `datetime` module.
-           root_url (str): The root URL from where AFT map files will be downloaded.
-           urls (list): List of URLs of AFT map files.
-           times (list): List of timestamps corresponding to the AFT map files.
-           counts (int): Total count of AFT map files.
-           datafile (str): File path to store the list of files in CSV format.
-           datalist (DataFrame): DataFrame containing the list of files and corresponding timestamps.
+       Attributes
+       -----------
+       ncpu : int
+            Number of CPU cores to utilize for downloading files. Defaults to `cpu_count() - 1`.
+       root_url: `str`
+            The root URL from where AFT map files will be downloaded.
+       urls: list
+            List of URLs of AFT map files.
+       times: list
+            List of timestamps corresponding to the AFT map files.
+       counts: int
+            Total count of AFT map files.
+       datafile: str
+            File path to store the list of files in CSV format.
+       datalist: pd.DataFrame
+            DataFrame containing the list of files and corresponding timestamps.
 
-       Methods:
-           __init__(root_url="https://data.boulder.swri.edu/lisa/"):
-               Initializes the AFTdownload object.
+       Methods
+       --------
+       get_list(t0=None, t1=None, dt=1):
+           Gets a list of AFT map files within a specified time range.
 
-           get_list(t0=None, t1=None, dt=1):
-               Gets a list of AFT map files within a specified time range.
+       reload_files(url=None, filetype="h5"):
+           Reloads the list of AFT map files from the root URL.
 
-           reload_files(url=None, filetype="h5"):
-               Reloads the list of AFT map files from the root URL.
-
-           download(dataframe, rootpath=None, ncpu=None):
-               Downloads AFT map files listed in the DataFrame.
-
-           _download(args):
-               Internal function to download AFT map files.
+       download(dataframe, rootpath=None, ncpu=None):
+           Downloads AFT map files listed in the DataFrame.
        """
     ncpu = cpu_count() - 1
 
     def __init__(self, root_url: str = "https://data.boulder.swri.edu/lisa/"):
-        """
-        Initializes the AFTdownload object.
-
-        Args:
-            root_url (str, optional): The root URL from where AFT map files will be downloaded.
-                Defaults to "https://data.boulder.swri.edu/lisa/".
-        """
         self.root_url = root_url
         self.urls = []
         self.times = []
@@ -90,19 +82,22 @@ class AFTdownload:
 
     def get_list(self, t0: dt.datetime = None, t1: dt.datetime = None, cadence: int = 1) -> pd.DataFrame:
         """
-                Gets a list of AFT map files within a specified time range.
+        Gets a list of AFT map files within a specified time range.
 
-                Args:
-                    t0 (datetime.datetime, optional): Start time of the time range. Defaults to None.
-                    t1 (datetime.datetime, optional): End time of the time range. Defaults to None.
-                    dt (int, optional): Time interval for sampling files within the time range. Defaults to 1.
+        Parameters
+        ----------
+        t0: dt.datetime
+            Start time of the AFT map files to be downloaded.
+        t1: dt.datetime
+            End time of the AFT map files to be downloaded.
+        cadence: int
+            Cadence of the AFT map files to be downloaded.
 
-                Returns:
-                    DataFrame: DataFrame containing the list of files within the specified time range.
-                    :param cadence:
-                    :param t0:
-                    :param t1:
-                """
+        Returns
+        ----------
+        data: pd.DataFrame
+            Pandas DataFrame containing the list of files within the specified time range.
+        """
         _cadence = [1, 2, 4]
         if not (cadence in _cadence):
             raise ValueError(f"Cadence has to be one of {_cadence}.")
@@ -129,12 +124,17 @@ class AFTdownload:
         """
         Reloads the list of AFT map files from the root URL.
 
-        Args:
-            url (str, optional): The URL to reload the list of files from. Defaults to None.
-            filetype (str, optional): The file extension of AFT map files. Defaults to "h5".
+        Parameters
+        ----------
+        url: str, optional
+            The URL to reload the list of files from. Defaults to None.
+        filetype: str, optional
+            The file extension of AFT map files. Defaults to "h5".
 
-        Returns:
-            bool: True if the list of files is successfully reloaded.
+        Returns
+        ----------
+        True: bool
+            True if the list of files is successfully reloaded.
         """
         if url is None:
             url = self.root_url
@@ -160,14 +160,18 @@ class AFTdownload:
         data.to_csv(self.datafile)
         return True
 
-    def download(self, dataframe, rootpath: str = None, ncpu: int = None):
+    def download(self, dataframe: pd.DataFrame, rootpath: str = None, ncpu: int = None):
         """
         Downloads AFT map files listed in the DataFrame.
 
-        Args:
-            dataframe (DataFrame): DataFrame containing the list of files to download.
-            rootpath (str, optional): Root directory path to save the downloaded files. Defaults to None.
-            ncpu (int, optional): Number of CPU cores to utilize for downloading files. Defaults to `cpu_count() - 1`.
+        Parameters
+        ----------
+        dataframe: pd.DataFrame
+            DataFrame containing the list of files to download.
+        rootpath: str, optional
+            Root directory path to save the downloaded files. Defaults to None.
+        ncpu: int, optional
+            Number of CPU cores to utilize for downloading files. Defaults to `cpu_count() - 1`.
         """
         if ncpu is None:
             self.ncpu = cpu_count() - 1

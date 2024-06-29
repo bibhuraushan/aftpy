@@ -33,12 +33,16 @@ theme:
     - navigation.footer
     - navigation.indexes
     - toc.follow
+    - content.code.copy
+    - content.code.annotate
 
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/bibhuraushan/aftpy
+  annotate:
+      json: [ .s2 ]
 
 plugins:
 - mkdocstrings:
@@ -69,5 +73,11 @@ nav:
   - Getting Started:
       - How to install: install.md
       - Example Codes : example.md
+
+markdown_extensions:
+    - pymdownx.highlight
+    - pymdownx.superfences
+    - pymdownx.highlight:
+          linenums: true
 
 copyright: Copyright &copy; 2023 Bibhuti Kumar Jha
