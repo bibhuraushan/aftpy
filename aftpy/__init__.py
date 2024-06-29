@@ -6,9 +6,11 @@ all the data from a directory and provide the instances and function to know abo
 provides a function to convert all the loaded data into **FITS** as well as many other formats.
 
 """
+import importlib.metadata
+__version__ = importlib.metadata.version("aftpy")
+
 __author__ = 'Bibhuti Kumar Jha'
 __email__ = 'bibhuraushan1@gmail.com'
-__version__ = '2.0.0'
 __all__ = ['AFTmap', 'AFTmaps', 'AFTdownload']
 
 from .aftmap import AFTmap
