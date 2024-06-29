@@ -659,47 +659,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#from-pypi" class="md-nav__link">
-    <span class="md-ellipsis">
-      From PyPI
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#from-source" class="md-nav__link">
-    <span class="md-ellipsis">
-      From source
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -717,20 +676,32 @@
 
 
 <h1 id="advective-flux-transport-model">Advective Flux Transport Model</h1>
-<p><code>AFTPy</code> offers a comprehensive solution for
-analyzing and downloading Advective Flux Transport (AFT) data,
-streamlining the process of data downloading in parallel and
-also facilitating the conversion of H5 files into the most popular
-FITS file format or various other formats with ease.</p>
-<h2 id="installation">Installation</h2>
-<h3 id="from-pypi">From PyPI</h3>
-<pre><code class="language-shell">pip install aftpy
-</code></pre>
-<h3 id="from-source">From source</h3>
-<pre><code class="language-shell">git clone git@github.com:bibhuraushan/aftpy.git
-cd aftpy
-python setup.py install
-</code></pre>
+<p><em>Source</em>: <a href="http://solarcyclescience.com/aft.html">SolarCycleScience.co</a></p>
+<p>The Advective Flux Transport (AFT) model is an advanced representation
+of the Surface Flux Transport (SFT) process, which describes the movement
+of magnetic flux on the Sun's surface. This model is crucial for understanding
+the latter stages of the solar dynamo process, where surface flows transport
+magnetic flux from active regions to the Sun’s poles. During this process,
+the polar fields from the previous solar cycle are canceled out, and a new
+poloidal field of opposite polarity begins to form, setting the stage for
+the next solar cycle.</p>
+<p>The AFT model stands out by minimizing parameterizations and directly incorporating
+observed data on active regions and surface flows. Unlike previous models that relied
+on artificial insertion of active regions and simplified flow profiles, the AFT model
+uses measured axisymmetric flows and a convective simulation that replicates the spectral
+characteristics of the Sun’s convective flows. This method allows for a more realistic
+simulation of surface flows, considering the finite lifetimes of convective cells and
+their interactions with differential rotation and meridional flow. Additionally, the
+AFT model accounts for the dampening effect of strong magnetic fields on convective
+velocities, a feature that traditional diffusivity-based models struggle to replicate.</p>
+<p>By incorporating magnetic data through manual insertion or direct assimilation
+from magnetograms, the AFT model achieves high flexibility and accuracy. Manual insertion,
+based on active region databases like NOAA, allows the model to explore flow dynamics
+and make predictions, while data assimilation ensures the most accurate synchronic maps
+of the Sun. These maps form the Baseline data set, which is essential for evaluating SFT
+models and providing source data for models extending into the solar atmosphere and heliosphere.
+The AFT model’s approach marks a significant improvement in the realism and accuracy of solar
+surface flow simulations.</p>
 
 
 
@@ -836,7 +807,7 @@ python setup.py install
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>

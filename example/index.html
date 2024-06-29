@@ -75,6 +75,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#examples" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -617,6 +622,19 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Example Codes
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -627,6 +645,91 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#reading-a-single-aft-map-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading a single AFT map file
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-all-aft-map-files-from-a-directory-and-its-subdirectories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading all AFT map files from a directory and its subdirectories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Other Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -657,6 +760,82 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#reading-a-single-aft-map-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading a single AFT map file
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-all-aft-map-files-from-a-directory-and-its-subdirectories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading all AFT map files from a directory and its subdirectories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Other Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -674,9 +853,152 @@
   
 
 
-  <h1>Example Codes</h1>
+<h1 id="examples">Examples</h1>
+<h2 id="reading-a-single-aft-map-file">Reading a single AFT map file</h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">aftpy</span> <span class="k">as</span> <span class="nn">aft</span>
+<span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;/file/path/AFTmap_20150101_0000.h5&quot;</span>
+<span class="n">aftmap</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">AFTmap</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+<span class="c1"># To see the details of the data</span>
+<span class="n">info</span> <span class="o">=</span> <span class="n">aftmap</span><span class="o">.</span><span class="n">info</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+
+<span class="c1"># To get AFT simulated data</span>
+<span class="n">bmap</span> <span class="o">=</span> <span class="n">aftmap</span><span class="o">.</span><span class="n">aftmap</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">bmap</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="c1"># To plot the map with default color map</span>
+<span class="n">aftmap</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+<span class="c1"># To get the polar field over (60 degree)</span>
+<span class="n">pfN</span><span class="p">,</span> <span class="n">pfS</span> <span class="o">=</span> <span class="n">aftmap</span><span class="o">.</span><span class="n">polarfield</span><span class="p">(</span><span class="n">latlim</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="c1"># or</span>
+
+<span class="n">pfN</span><span class="p">,</span> <span class="n">pfS</span> <span class="o">=</span> <span class="n">aftmap</span><span class="o">.</span><span class="n">pfN</span><span class="p">,</span> <span class="n">aftmap</span><span class="o">.</span><span class="n">pfS</span>
+
+<span class="c1"># To get complete information in Notebook</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">aftmap</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<h2 id="reading-all-aft-map-files-from-a-directory-and-its-subdirectories">Reading all AFT map files from a directory and its subdirectories</h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">aftpy</span> <span class="k">as</span> <span class="nn">aft</span>
+
+<span class="c1"># Load all files from &quot;/file/root/dir&quot; </span>
+<span class="n">fileroot_dir</span> <span class="o">=</span> <span class="s2">&quot;/file/root/dir&quot;</span>
+<span class="n">aftdata</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">AFTmaps</span><span class="p">(</span><span class="n">fileroot_dir</span><span class="p">)</span>
+
+<span class="c1"># Generate the list of parametes save it to csv using pnadas DataFrame</span>
+<span class="n">outfle</span> <span class="o">=</span> <span class="s2">&quot;/Users/bjha/Data/AFT/AFT_parameters_hmifd.csv&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">aftdata</span><span class="o">.</span><span class="n">generate_parameters</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="n">outfle</span><span class="p">,</span> <span class="n">use_saved</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Get the list of timestamps in ISO format</span>
+<span class="n">times</span> <span class="o">=</span> <span class="n">aftdata</span><span class="o">.</span><span class="n">timestamps</span>
+
+<span class="c1"># Get all the aftmaps as AFTmap object as an ittirator </span>
+
+<span class="n">aftmaps</span> <span class="o">=</span> <span class="n">aftdata</span><span class="o">.</span><span class="n">aftmaps</span>
+<span class="k">for</span> <span class="n">aftmap</span> <span class="ow">in</span> <span class="n">aftmaps</span><span class="p">:</span>
+    <span class="c1"># use aftmap as previous example</span>
+    <span class="o">...</span>
+
+<span class="c1"># To calculate Carrington Averaged map for butterfly diagram</span>
+<span class="n">crmap</span> <span class="o">=</span> <span class="n">aftdata</span><span class="o">.</span><span class="n">cravgmap</span><span class="p">()</span>
 
 
+<span class="c1"># To convert all maps to png and save in a directory.</span>
+<span class="n">aftdata</span><span class="o">.</span><span class="n">convert_all</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<h2 id="other-examples">Other Examples</h2>
+<h3 id="example-usage">Example Usage</h3>
+<hr />
+<h4 id="example-1">Example 1</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">aftpy.aftmap</span> <span class="k">as</span> <span class="nn">aft</span>
+
+<span class="c1"># Initialize AFTload object</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">AFTmaps</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/aft/maps&quot;</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;h5&quot;</span><span class="p">)</span>
+
+<span class="c1"># Convert all AFT map files to FITS format to &#39;/path/to/converted/maps&#39;</span>
+<span class="n">loader</span><span class="o">.</span><span class="n">convert_all</span><span class="p">(</span><span class="n">convert_to</span><span class="o">=</span><span class="s2">&quot;fits&quot;</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;/path/to/converted/maps&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<h4 id="example-2">Example 2</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">aftpy.getaftdata</span> <span class="k">as</span> <span class="nn">aftget</span>
+<span class="c1"># Initialize AFTdownload object</span>
+<span class="n">downloader</span> <span class="o">=</span> <span class="n">aftget</span><span class="o">.</span><span class="n">AFTdownload</span><span class="p">()</span>
+
+<span class="c1"># Reload the list of AFT map files</span>
+<span class="n">downloader</span><span class="o">.</span><span class="n">reload_files</span><span class="p">()</span>
+
+<span class="c1"># Get the list of AFT map files within a specified time range</span>
+<span class="n">file_list</span> <span class="o">=</span> <span class="n">downloader</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">t1</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+<span class="c1"># Download AFT map files listed in the DataFrame</span>
+<span class="n">downloader</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">file_list</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
 
 
 
@@ -766,7 +1088,7 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>

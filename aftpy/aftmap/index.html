@@ -560,6 +560,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#aftpy.aftmap.AFTmap--methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#aftpy.aftmap.AFTmap--examples" class="md-nav__link">
     <span class="md-ellipsis">
       Examples
@@ -1229,6 +1238,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#aftpy.aftmap.AFTmap--methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#aftpy.aftmap.AFTmap--examples" class="md-nav__link">
     <span class="md-ellipsis">
       Examples
@@ -1774,6 +1792,15 @@ date_fmt:str, optional
     Date format of the file. Default is "AFTmap_%Y%m%d_%H%M.h5"
 !!! timestamp "dt.datetime, optional"
     Timestamp of the file if filetype is "hipft". Default is none otherwise.</p>
+<h4 id="aftpy.aftmap.AFTmap--methods">Methods</h4>
+<p>polarfield(self, monopole_corr: bool = True, latlim: float = 60, **kwargs) -&gt; tuple:
+    Calculate the polar field of an AFTmap.</p>
+<p>dipole(self, monopole_corr: object = True) -&gt; tuple:
+    Calculate the dipole of an AFTmap.</p>
+<p>convert(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True, **kwargs) -&gt; None:
+    A conversion tool for AFTmap.
+plot(self, show_mask: bool = True, save: bool = False, outpath: str = None) -&gt; tuple:
+    Plot AFTmap data with color bar and timestamp.</p>
 <h4 id="aftpy.aftmap.AFTmap--examples">Examples</h4>
 <blockquote>
 <blockquote>
@@ -2512,7 +2539,7 @@ save :bool, optional
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>

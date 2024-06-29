@@ -315,6 +315,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="." class="md-nav__link md-nav__link--active">
         
   
@@ -324,6 +335,43 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aftmap-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      aftmap module
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aftgetdata-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      aftgetdata module
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -662,6 +710,32 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aftmap-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      aftmap module
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aftgetdata-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      aftgetdata module
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -685,6 +759,21 @@ analyzing and downloading Advective Flux Transport (AFT) data,
 streamlining the process of data downloading in parallel and
 also facilitating the conversion of H5 files into the most popular
 FITS file format or various other formats with ease.</p>
+<hr />
+<p><code>aftpy</code> provides two important Python modules named <code>aftmap</code> and <code>aftgetdata</code>. These modules can be used
+to read a single <strong>aftmap file</strong> or load all the files from a given directory.</p>
+<h2 id="aftmap-module">aftmap module</h2>
+<hr />
+<p>The <code>aftmap</code> module also provides two Python classes <code>AFTmap</code> and <code>AFTmaps</code> (earlier <code>AFTload</code>). The <code>AFTmap</code> class
+provides an interface to read a single H5 <strong>AFTmap</strong> file and provides you the functions and instances 
+to get the information and plot the data. The other class <code>AFTmaps</code> provides the interface to load 
+all the data from a directory and provide the instances and function to know about the loaded data. It also
+provides a function to convert all the loaded data into <strong>FITS</strong> as well as many other formats.</p>
+<h2 id="aftgetdata-module">aftgetdata module</h2>
+<hr />
+<p>The <code>aftgetdata</code> module provide a one step approach to download <code>AFTmap</code>
+file in HDF file format from the  SwRI Public Data Server. This uses a parralel data download
+approach to download data very quickely. </p>
 
 
 
@@ -774,7 +863,7 @@ FITS file format or various other formats with ease.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.path", "navigation.tracking", "navigation.footer", "navigation.indexes", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="assets/javascripts/bundle.ad660dcc.min.js"></script>
