@@ -11,7 +11,7 @@ license = {text = "MIT"}
 authors = [
     {name = "Bibhuti Kumar Jha", email = "bibhuraushan1@gmail.com"}
 ]
-keywords = ["Sun", "dataloader", "AFT", "SFT"]
+keywords = ["Sun", "Dataloader", "AFT", "SFT"]
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python"
