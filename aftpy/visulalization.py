@@ -46,3 +46,13 @@ class Visulalization:
             p.show()
         else:
             raise NotImplementedError(f"Butterfly diagram not implemented for {ax}")
+
+    def plot_polarfiled(self, ax: Axis = None, **kwargs):
+        """
+
+        Parameters
+        ----------
+        ax
+        kwargs
+        """
+        raise NotImplementedError(f"Polar diagram not implemented for {ax}")
