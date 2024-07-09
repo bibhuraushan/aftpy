@@ -12,7 +12,7 @@ FITS file format or various other formats with ease.
 
 ## Installation
 
-### From PyPI
+### From PyPI (Pip)
 
 ```shell
 pip install aftpy
