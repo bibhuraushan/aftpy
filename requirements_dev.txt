@@ -1,16 +1,6 @@
-black
-black[jupyter]
-build
-bump-my-version
-wheel
-flake8
-twine
-click
-pytest
-pytest-runner
 sunpy[all]
 
-ipykernel
+
 livereload
 nbconvert
 nbformat
