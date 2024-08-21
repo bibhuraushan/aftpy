@@ -17,5 +17,8 @@ from .aftmap import AFTmap
 from .aftmaps import AFTmaps
 from .getaftdata import AFTdownload
 from .visulalization import Visulalization
+from pathlib import Path
+home = Path.home()/".aftpy"
+home.mkdir(exist_ok=True, parents=True)
 
 

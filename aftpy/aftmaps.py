@@ -20,7 +20,7 @@ from astropy.time import Time
 from .aftmap import AFTmap
 from numpy import ndarray, dtype
 
-this_directory = Path(__file__).parent
+this_directory = Path.home()/".aftpy"
 __all__ = ['AFTmaps']
 
 
