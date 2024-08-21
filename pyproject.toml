@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aftpy"
-version = "2.0.1"
+version = "2.0.2"
 description = "Python package to Read, Visualize and download AFTmap data."
 readme = "README.md"
 license = {text = "MIT"}
