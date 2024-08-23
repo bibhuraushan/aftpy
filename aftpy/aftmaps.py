@@ -20,7 +20,7 @@ from astropy.time import Time
 from .aftmap import AFTmap
 from numpy import ndarray, dtype
 
-this_directory = Path.home()/".aftpy"
+this_directory = Path.home() / ".aftpy"
 __all__ = ['AFTmaps']
 
 
@@ -57,8 +57,11 @@ class AFTmaps:
     """
 
     def __init__(self, path: str | list | tuple = ".", filetype: str = "aftmap",
-                 date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5", monopole_corr: bool = False,
-                 verbose: bool = True, hipft_prop: dict = None):
+                 date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
+                 monopole_corr: bool = False,
+                 latlim: float = 60,
+                 verbose: bool = True,
+                 hipft_prop: dict = None):
         """
         Initilaizing class function.
         """
@@ -67,6 +70,7 @@ class AFTmaps:
         self.date_fmt = date_fmt
         self.verbose = verbose
         self.monopole_corr = monopole_corr
+        self.latlim = latlim
         self._fileext = {"aftmap": "h5", "oldaft": "dat", "hipft": "h5"}
 
         # Whether it is a list of paths or one path
@@ -206,7 +210,7 @@ class AFTmaps:
                 print(f"({frac:.2f}%) Converting {os.path.basename(_file)} to {os.path.basename(_filename)}", end="\r")
 
     @staticmethod
-    def _generate_para(filelist: object) -> object:
+    def __generate_para(filelist: object) -> object:
         """
         A helper function to generate a aft parameters for a given file.
         Parameters
@@ -220,10 +224,10 @@ class AFTmaps:
             A tuple containing the all the AFT parameters for the file.
 
         """
-        file, filetype, datefmt, monopole_corr = filelist
+        file, filetype, datefmt, monopole_corr, latlim = filelist
         mapobj = AFTmap(file, filetype=filetype, date_fmt=datefmt)
         tflux = round(np.abs(mapobj.flux).sum(), 3)
-        pf = mapobj.polarfield(monopole_corr=monopole_corr)
+        pf = mapobj.polarfield(monopole_corr=monopole_corr, latlim=latlim)
         dp = mapobj.dipole(monopole_corr=monopole_corr)
         para = (mapobj.time, *pf, *dp, tflux)
         return para
@@ -265,9 +269,10 @@ class AFTmaps:
         result = []
         tint = time.time()
         bar_format = '{desc}: {percentage:3.2f}%|{bar}{r_bar}'
-        inputpara = [(file, self.filetype, self.date_fmt, self.monopole_corr) for file in self.filelist]
+        inputpara = [(file, self.filetype, self.date_fmt, self.monopole_corr, self.latlim)
+                     for file in self.filelist]
         with Pool(nthreds) as pool:
-            for _para in tq.tqdm(pool.imap(self._generate_para, inputpara),
+            for _para in tq.tqdm(pool.imap(self.__generate_para, inputpara),
                                  bar_format=bar_format, total=self.counts):
                 result.append(_para)
         if self.verbose:
