@@ -18,6 +18,10 @@ from pathlib import Path
 from sunpy.map.header_helper import make_heliographic_header
 from sunpy.coordinates import get_earth
 from numpy import ndarray, dtype
+from urllib.parse import urlparse
+from io import BytesIO
+import requests
+import os
 
 this_directory = Path(__file__).parent
 
@@ -53,8 +57,8 @@ class AFTmap:
 
     Parameters
     ----------
-    file: str
-        Name of the to be loaded or read.
+    filepath: str
+        Name or url of the file to be loaded or read.
     filetype: str, optional
         Type of the file to load. Default is "h5"
     date_fmt:str, optional
@@ -94,17 +98,18 @@ class AFTmap:
                      "magmap": "Assimilated magnetogram in Carrington Grid."}
     fileext = {"aftmap": "h5", "oldaft": "dat", "hipft": "h5"}
 
-    def __init__(self, file: str, filetype: str = "aftmap",
+    def __init__(self, filepath: str, filetype: str = "aftmap",
                  date_fmt: str = "AFTmap_%Y%m%d_%H%M.h5",
                  timestamp: dt.datetime = None) -> None:
         """Initialize an AFTmap object.
         """
-        self.file = file
-        self.name = file.split("/")[-1]
+        self.file = None
+        self.filepath = filepath
+        self.name = filepath.split("/")[-1]
         self.filetype = filetype
         self.date_fmt = date_fmt
         self.map_list = None
-        self.timestamp = timestamp
+        self.__timestamp = timestamp
 
         if self.filetype == "aftmap":
             with hdf.File(self.file) as fl:
@@ -112,11 +117,33 @@ class AFTmap:
         else:
             self.map_list = ["aftmap"]
 
-        if (filetype == "hipft") & (self.timestamp is None):
+        if (filetype == "hipft") & (timestamp is None):
             print("Timestamp not provided. Assuming today as the timestamp.")
-            self.timestamp = Time(dt.datetime.today()).fits
+            self.__timestamp = Time(dt.datetime.today()).fits
         elif timestamp is not None:
-            self.timestamp = Time(timestamp).fits
+            self.__timestamp = Time(timestamp).fits
+
+    @property
+    def filepath(self):
+        """ Getter for filepath.
+
+        Returns
+        -------
+        filepath: str
+            Name or url of the file to be loaded or read.
+        """
+        return self._filepath
+
+    @filepath.setter
+    def filepath(self, filepath):
+        self._filepath = filepath
+        if urlparse(filepath).scheme in ("http", "https", "ftp", "ftps"):
+            response = requests.get(filepath)
+            # If error occured
+            response.raise_for_status()
+            self.file = BytesIO(response.content)
+        elif os.path.exists(filepath):
+            self.file = filepath
 
     def __repr__(self):
         """String represenation of the AFTMap object.
@@ -184,7 +211,7 @@ class AFTmap:
             _time = dt.datetime.strptime(
                 self.name, self.date_fmt).isoformat()
         elif self.filetype == "hipft":
-            _time = self.timestamp
+            _time = self.__timestamp
         return _time
 
     @property
