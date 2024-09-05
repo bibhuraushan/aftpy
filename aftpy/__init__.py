@@ -7,6 +7,7 @@ provides a function to convert all the loaded data into **FITS** as well as many
 
 """
 import importlib.metadata
+
 __version__ = importlib.metadata.version("aftpy")
 
 __author__ = 'Bibhuti Kumar Jha'
@@ -18,7 +19,19 @@ from .aftmaps import AFTmaps
 from .getaftdata import AFTdownload
 from .visulalization import Visulalization
 from pathlib import Path
-home = Path.home()/".aftpy"
+import os
+
+home = Path.home() / ".aftpy"
 home.mkdir(exist_ok=True, parents=True)
 
 
+def clean():
+    """
+    Clean .aft directory for fresh runs.
+    Returns
+    -------
+
+    """
+    for fl in home.iterdir():
+        os.remove(fl)
+    print("WARNING: AFTmap directory has been cleaned.")

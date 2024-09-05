@@ -10,7 +10,7 @@ from multiprocessing.pool import ThreadPool
 import tqdm as tq
 from pathlib import Path
 
-this_directory = Path(__file__).parent
+this_directory = Path.home() / ".aftpy"
 
 
 def _download(args: tuple):
