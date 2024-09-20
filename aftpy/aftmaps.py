@@ -309,11 +309,13 @@ class AFTmaps:
         crmap = crmap / ind[0].size
         return crmap
 
-    def cravgmap(self, use_saved: bool = True) -> np.ndarray:
+    def cravgmap(self, use_saved: bool = True, nthreds=None) -> np.ndarray:
         """
 
         Parameters
         ----------
+        nthreds: int, optional
+            The number of thredds to use for the calculations. Defaults to None.
         use_saved:
             Whether to relaod form saved file or not. Defaults to True.
 
@@ -333,13 +335,25 @@ class AFTmaps:
             elif self.verbose:
                 print("WARNING: Saved data is outdated, skipping saved data.")
 
+        if nthreds is None:
+            nthreds = cpu_count() - 1
+
         # Get carrington Numbers
         crn = self._CRN
         crn0 = crn.min()
         bar_format = '{desc}: {percentage:3.2f}%|{bar}{r_bar}'
         bflymap = np.zeros((512, len(crn)))
-        for _crn in tq.tqdm(crn, bar_format=bar_format, total=len(crn)):
-            bflymap[:, _crn - crn0] = self.get_crmap(_crn).mean(axis=1)
+
+        # In parallel
+        with Pool(nthreds) as pool:
+            _crn = 0
+            for _result in tq.tqdm(pool.imap(self.get_crmap, crn),
+                                   bar_format=bar_format, total=len(crn)):
+                bflymap[:, _crn] = _result.mean(axis=1)
+                _crn += 1
+        # In series
+        # for _crn in tq.tqdm(crn, bar_format=bar_format, total=len(crn)):
+        #     bflymap[:, _crn - crn0] = self.get_crmap(_crn).mean(axis=1)
         if save_exist:
             os.remove(save_file)
         with hdf.File(save_file, "w") as fh5:
