@@ -69,8 +69,9 @@ aftdata.convert_all()
 ---
 
 #### Example 1
+
 ```python
-import aftpy.aftmap as aft
+import aftpy.sftbasemap as aft
 
 # Initialize AFTload object
 loader = aft.AFTmaps(path="/path/to/aft/maps", filetype="h5")

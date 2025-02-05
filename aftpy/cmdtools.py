@@ -2,8 +2,8 @@ __all__ = ['get_arg_file', 'get_arg_dir', 'aftview', 'aftconvertor']
 
 import argparse
 import os
-from .aftmap import AFTmap
-from .aftmaps import AFTmaps
+from .sftbasemap import AFTmap
+from .sft import AFTmaps
 
 
 def get_arg_file():

@@ -12,10 +12,10 @@ __version__ = importlib.metadata.version("aftpy")
 
 __author__ = 'Bibhuti Kumar Jha'
 __email__ = 'bibhuraushan1@gmail.com'
-__all__ = ['AFTmap', 'AFTmaps', 'AFTdownload']
+# __all__ = ['SFTMap', 'AFTmaps', 'AFTdownload']
 
-from .aftmap import AFTmap
-from .aftmaps import AFTmaps
+from .sftbasemap import SFTMap
+from .sft import SFT
 from .getaftdata import AFTdownload
 from .visulalization import Visulalization
 from pathlib import Path
