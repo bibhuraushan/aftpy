@@ -12,6 +12,7 @@ import os
 import tqdm as tq
 from pathlib import Path
 from sunpy.coordinates.sun import carrington_rotation_number
+from asdf import AsdfFile
 from .utilities import file_search, h52df, df2h5
 from multiprocessing.pool import ThreadPool as Pool
 from multiprocessing import cpu_count
@@ -21,9 +22,39 @@ from .sftbasemap import SFTMap
 from numpy import ndarray, dtype
 from .io.util import is_path, is_url, is_dir
 from .io.io import read_aftv2
+from multiprocessing.pool import ThreadPool as Pool
+from tqdm.autonotebook import tqdm
+import json
 
 this_directory = Path.home() / ".aftpy"
 __all__ = ['SFT']
+
+
+class JsonSerialize(json.JSONEncoder):
+    """Custom JSON encoder for handling NumPy types."""
+
+    def default(self, obj):
+        """
+
+        Parameters
+        ----------
+        obj
+
+        Returns
+        -------
+
+        """
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.int32):
+            return int(obj)
+        if isinstance(obj, str):
+            return obj.strip()
+        return super().default(obj)
 
 
 
@@ -53,12 +84,13 @@ class SFT:
         self.current = -1
         self.sftmodel = None
         self.files = None
+        self._dbfile = None
 
         if self.nargs == 1:
             self.input = args[0]
 
             # Single file case (Path or URL)
-            if isinstance(self.input, str) and (is_path(self.input) or is_url(self.input)):
+            if isinstance(self.input, str) and (is_path(self.input)) or is_url(self.input):
                 self.nfiles = 1
                 self.sftmodel = "aftv2"
 
@@ -93,6 +125,8 @@ class SFT:
 
         else:
             raise ValueError("Unsupported number of arguments.")
+    def __len__(self):
+        return self.nfiles
 
     def __iter__(self):
         """Returns an iterator instance."""
@@ -126,6 +160,58 @@ class SFT:
             return SFTMap(self.files[self.current])
 
         return None
+    @staticmethod
+    def __get_para(x):
+        return x.parameters()
+
+    def generate_database(self, azavg=True, outdir="./", n_threads=None, parallel=True, dbfmt="JSON"):
+        """
+
+        Parameters
+        ----------
+        azavg
+        dbfmt
+        parallel
+        n_threads
+        outdir
+
+        Returns
+        -------
+
+        """
+        ncpus = 0
+        if n_threads is None:
+            n_threads = max(1, cpu_count()-1)
+        _ext ={"JSON":".json",
+               "ASDF":".asdf",
+               "HDF5":".hdf5",}
+        results = {}
+        os.makedirs(outdir, exist_ok=True)
+        _outfile=f"SFTdb_{dt.datetime.now().strftime('%Y%m%d%H%M%S')}{_ext[dbfmt.upper()]}"
+        _outpath = os.path.join(outdir, _outfile)
+        if parallel:
+            bar_format = '{desc}: {percentage:3.2f}%|{bar}{r_bar}'
+            with Pool(n_threads) as pool:
+                for result in tqdm(pool.imap_unordered(self.__get_para, self),
+                              bar_format=bar_format, total=len(self.files)):
+                    if not azavg:
+                        result.pop("AZAVG")
+                    results[result.get("DATE_OBS", None)]=result
+        else:
+            for a in self:
+                result = self.__get_para(a)
+                results[result.get("DATE_OBS", None)]=result
+        # db = dict(zip(range(len(self.files)), results))
+        if dbfmt.upper() == "JSON":
+            with open(_outpath, "w") as f:
+                json.dump(results, f, indent=4, cls=JsonSerialize)
+        elif dbfmt.upper() == "ASDF":
+            AsdfFile(results).write_to(_outpath)
+        print(f"Wrote {len(results)} files to {_outpath}.")
+
+
+
+
 
 
 

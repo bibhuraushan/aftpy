@@ -8,6 +8,7 @@ __all__ = ['SFTMap']
 from typing import Tuple, Any
 from astropy.io.fits import Header
 from docutils.io import InputError
+from dataclasses import dataclass
 from sunpy.util.metadata import MetaDict
 import h5py as hdf
 import matplotlib.pyplot as plt
@@ -27,72 +28,112 @@ import requests
 import os
 from .utilities import detect_sftmodel
 from .io.io import read_aftv2
+from sunpy.sun.constants import radius
+from astropy.wcs import WCS
+import astropy.units as u
+from sunpy.map import GenericMap
 
 this_directory = Path(__file__).parent
+
+@dataclass(order=True, frozen=True)
+class SFTPara:
+    """
+    SFT paramaters dataclass. This data class is used to store the parameters for a SFT data.
+
+    Parameters
+    -------------
+    polarn: Polarfield
+    """
+    time : str = None
+    polarn: float | None = None
+    polars: float | None = None
+    adm: float | None = None
+    edm: float | None = None
+    flux: float | None = None
+    azavg: np.ndarray | list | Tuple | None = None
+    latlim: int = 70 * u.deg
+    monopole: bool = True
+
+    def __repr__(self):
+        return f"SFTPara DataClass (polarn, polars, adm, edm, flux, azavg, latlim)"
+    def __str__(self):
+
+            return ", ".join([f"{key}={self.__dict__[key]:0.3G}"
+                              for key in self.__dict__ if (key !="azavg") and (self.__dict__[key] is not None)])
+    def todict(self, azavg = False, latlim=False, monopole=False) -> dict:
+        """
+
+        Returns
+        -------
+
+        """
+        _dict = self.__dict__.copy()
+        if not azavg:
+            _dict.pop("azavg")
+        if not latlim:
+            _dict.pop("latlim")
+        if not monopole:
+            _dict.pop("monopole")
+        for key in _dict:
+            try:
+                _dict[key] = _dict[key].value
+            except AttributeError:
+                pass
+        return dict(_dict)
+import sunpy.map
+
+class AFTSunpyMap(sunpy.map.GenericMap):
+  """
+  NextGenerationTelescope Map.
+
+  The Next Generation Telescope is a optical telescope on board the new space mission.
+  It operates in low Earth orbit with an altitude of 600 km and an inclination of 28.5 degrees.
+  It is designed to observe the mechanisms that are responsible for triggering the impulsive release of magnetic energy in the solar corona.
+  It observes in the following 3 different passbands, in visible light, wavelength A, wavelength B, wavelength C.
+
+  The focal plane consists of a detector with 4k x 4k pixels.
+  The plate scale is 0.1 arcsec per pixel.
+  The field of view is the whole Sun (1000 x 1000 arcsec).
+  It makes images in each passband every 1 second except for when it is in eclipse which occurs every approximately 80 minutes.
+
+  It began operating on 2100 November 1.
+
+  Notes
+  -----
+  Due to failure of the filter wheel, 2 of the different passbands are no longer functional.
+
+  References
+  ----------
+  * Mission Paper
+  * Instrument Paper(s)
+  * Data Archive
+  * Mission documents
+  """
+  def __init__(self, data, header, **kwargs):
+      if header.get("instrume", None) is None:
+          header["instrume"] = "AFTv2.0"
+      super().__init__(data, header, **kwargs)
+
+        # Any NextGenerationTelescope Instrument-specific manipulation.
+        # Any metadata changes should be done by overloading
+        # the corresponding attributes/methods.
+
+    # Used by the Map factory to determine if this subclass should be used
+  @classmethod
+  def is_datasource_for(cls, data, header, **kwargs):
+        """
+        Determines if data, header corresponds to a NextGenerationTelescope image
+        """
+        # Returns True only if this is data and header from NextGenerationTelescope
+        return header.get('instrume', '').startswith('AFTv2.0')
+
 
 
 class SFTMap:
     """
     A python class to work with individual AFTmap file.
 
-    Attributes
-    ----------
-    nx:int
-        Number of pixels in the x-direction.
-    ny: int
-        Number of pixels in the y-direction.
-    dlat:float
-        Latitude step size.
-    dlon: float
-        Latitude and longitude step size.
-    latd: ndarray
-        Latitude grid in degrees.
-    lond: ndarray
-        Longitude grid in degrees.
-    latr: ndarray
-        Latitude grid in radian.
-    lonr: ndarray
-        Longitude grid in radian.
-    map_list: list, optional
-        List to stored information in AFTmap file.
-    contents_info : dict, optional
-        Dictionary containing information about the AFTmap file.
-    fileext: dict, optional
-        Dictionary containing extension for various AFTmap file format.
-
-    Parameters
-    ----------
-    filepath: str
-        Name or url of the file to be loaded or read.
-    filetype: str, optional
-        Type of the file to load. Default is "h5"
-    date_fmt:str, optional
-        Date format of the file. Default is "AFTmap_%Y%m%d_%H%M.h5"
-    timestamp: dt.datetime, optional
-        Timestamp of the file if filetype is "hipft". Default is none otherwise.
-
-    Methods
-    ---------
-    polarfield(self, monopole_corr: bool = True, latlim: float = 60, **kwargs) -> tuple:
-        Calculate the polar field of an AFTmap.
-
-    dipole(self, monopole_corr: object = True) -> tuple:
-        Calculate the dipole of an AFTmap.
-
-    convert(self, convert_to: str = "fits", outpath: str = ".", verbose: bool = True, **kwargs) -> None:
-        A conversion tool for AFTmap.
-    plot(self, show_mask: bool = True, save: bool = False, outpath: str = None) -> tuple:
-        Plot AFTmap data with color bar and timestamp.
     """
-
-    # nx = 1024
-    # ny = 512
-    # dlat = np.pi / ny
-    # dlon = 2.0 * np.pi / nx
-    # latd = np.tile(np.arange(0.5, ny) * 180.0 / ny - 90.0, (nx, 1)).T
-    # lond = np.tile(np.arange(0.5, nx) * 360.0 / nx, (ny, 1))
-    # latr = np.deg2rad(latd)
-    # lonr = np.deg2rad(lond)
     # contents_info = {"aftmap": "AFT Baseline Map.",
     #                  "mask": "Region of Data Assimilation.",
     #                  "vlat": "Theta Component of flows at the surface.",
@@ -104,9 +145,14 @@ class SFTMap:
                  mask=None, magmap=None, **kwargs) -> None:
         """Initialize an AFTmap object.
         """
+        self.filename=None
         if isinstance(data,str) and header is None:
             _sftmodel = detect_sftmodel(data)
             _sftdata = read_aftv2(data)
+            _root = data
+            for i in range(3):
+                _root = os.path.dirname(_root)
+            self.filename = Path(data).relative_to(_root)
             self.data = _sftdata["data"]
             self.header = _sftdata["header"]
             self.mask = _sftdata["mask"]
@@ -154,6 +200,26 @@ class SFTMap:
         self._header = header
 
     @property
+    def shape(self):
+        """
+
+        Returns
+        -------
+
+        """
+        return self.data.shape
+
+    @property
+    def wcs(self):
+        """
+
+        Returns
+        -------
+
+        """
+        return WCS(self.header)
+
+    @property
     def mask(self):
         """
 
@@ -191,6 +257,85 @@ class SFTMap:
         """String represenation of the AFTMap object.
         """
         return f"SFTMap(Model=AFTv2, Data={self.data.shape} Time={self.timestamp})"
+
+
+    def pixel_coord(self, radian=True):
+        """
+
+        Parameters
+        ----------
+        radian
+
+        Returns
+        -------
+
+        """
+        ny, nx = self.shape
+        R = radius.to_value("cm")
+        y, x = np.mgrid[0:ny, 0:nx]
+        _lat = self.wcs.pixel_to_world(x, y).lat
+        _lon = self.wcs.pixel_to_world(x, y).lon
+        if radian:
+            lat = _lat.radian
+            lon = _lon.radian
+        else:
+            lat = _lat.deg
+            lon = _lon.deg
+        area = (2.0 * np.pi * R / nx) * (2.0 * np.pi * R / nx) * np.cos(_lat.radian)
+        return lat, lon, area
+
+    def parameters(self, latlim=60, monopole_corr=False):
+        """
+
+        Returns
+        -------
+
+        """
+        lat, lon, area = self.pixel_coord(radian=False)
+        flux = self.data * area
+        total_flux = np.sum(np.abs(flux))
+        indn = np.where(lat > latlim)
+        inds = np.where(lat < -latlim)
+        polarn = flux[indn].sum() / area[indn].sum()
+        polars = flux[inds].sum() / area[inds].sum()
+        azavg = self.data.mean(axis=1)
+
+
+        # Dipole moments
+        lat, lon, area = self.pixel_coord(radian=True)
+        coslat = np.cos(lat)
+        sinlat = np.sin(lat)
+        coslon = np.cos(lon)
+        sinlon = np.sin(lon)
+        _sftmap = self.data
+        if monopole_corr:
+            _mp = (_sftmap * coslat).sum() / coslat.sum()
+            _sftmap = _sftmap - _mp
+
+        ny, nx = self.shape
+        dlat = np.pi/ny
+        dlon = 2.0*np.pi/nx
+
+        # Axial dipole
+        _adipole = (3.0 / (4.0 * np.pi)) * np.sum(_sftmap * coslat * sinlat) * dlat * dlon
+
+        # Equtorial Dipole
+        _edipolex = (3.0 / (4.0 * np.pi)) * np.sum(_sftmap * sinlat * sinlat * coslon) * dlat * dlon
+        _edipoley = (3.0 / (4.0 * np.pi)) * np.sum(_sftmap * sinlat * sinlat * sinlon) * dlat * dlon
+        _edipole = np.hypot(_edipolex, _edipoley)
+
+        _dict = {   "POLARN":polarn,
+                    "POLARS":polars,
+                    "EDM":_edipole,
+                    "ADM":_adipole,
+                    "AZAVG":azavg,
+                    "ABSFLUX":total_flux,
+
+        }
+        hdr = {"FILENAME":str(self.filename)}| dict(self.header).copy() | _dict
+        # hdr = _filename | hdr
+
+        return hdr
 
 
     # ============================================================
