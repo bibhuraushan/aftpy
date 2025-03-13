@@ -17,7 +17,7 @@ __email__ = 'bibhuraushan1@gmail.com'
 from .sftbasemap import SFTMap
 from .sft import SFT
 from .getaftdata import AFTdownload
-from .visulalization import Visulalization
+from aftpy.visulaizations.visulalization import Visulalization
 from pathlib import Path
 import os
 
