@@ -40,10 +40,12 @@ References
 
 import os
 import json
+import pathlib
 import datetime as dt
 from pathlib import Path
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool as Pool
+from typing import Any
 
 import numpy as np
 from asdf import AsdfFile
@@ -195,7 +197,7 @@ class SFT:
         elif self.nfiles > 1 and self.nargs == 1:
             return SFTMap(self.files[self.current])
 
-        return None
+        # return None
 
     @staticmethod
     def __get_para(x):
@@ -209,7 +211,7 @@ class SFT:
         ----------
         azavg : bool, optional
             Whether to include azimuthal averages.
-        outfile : str, optional
+        outfile : str,Path, None, optional
             Output file path.
         n_threads : int, optional
             Number of threads for parallel processing.
@@ -220,27 +222,34 @@ class SFT:
 
         Returns
         -------
-        None
+        None, dict
             Saves the results in the specified format.
         """
         if n_threads is None:
             n_threads = max(1, cpu_count() - 1)
 
         ext_map = {"JSON": ".json", "ASDF": ".asdf", "HDF5": ".hdf5"}
-        results = {}
+        results: dict[Any, Any] = {}
+        if dbfmt.upper() != "DICT":
+            if outfile is None:
+                outfile = f"SFT_db_{dt.datetime.now().strftime('%Y%m%d')}{ext_map[dbfmt.upper()]}"
+                path = Path(outfile)
+            elif isinstance(outfile, Path):
+                path = outfile
+            elif isinstance(outfile, str):
+                path = Path(outfile)
+            else:
+                raise ValueError(f"Invalid output file type: {type(outfile)}")
 
-        if outfile is None:
-            outfile = f"SFT_db_{dt.datetime.now().strftime('%Y%m%d')}{ext_map[dbfmt.upper()]}"
-        path = Path(outfile)
-
-        if path.is_dir():
-            outfile = os.path.join(outfile, f"SFT_db_{dt.datetime.now().strftime('%Y%m%d')}{ext_map[dbfmt.upper()]}")
-        else:
-            dbfmt = path.suffix[1:].upper()
+            if path.is_dir():
+                outfile = os.path.join(outfile, f"SFT_db_{dt.datetime.now().strftime('%Y%m%d')}{ext_map[dbfmt.upper()]}")
+            else:
+                dbfmt = path.suffix[1:].upper()
 
         if parallel:
             with Pool(n_threads) as pool:
-                for result in tqdm(pool.imap(self.__get_para, self), total=len(self.files)):
+                for result in tqdm(pool.imap(self.__get_para, self),
+                                   total=len(self.files)-self.current-1):
                     if not azavg:
                         result.pop("AZAVG")
                     results[result.get("DATE_OBS", None)] = result
@@ -253,7 +262,52 @@ class SFT:
         if dbfmt.upper() == "JSON":
             with open(outfile, "w") as f:
                 json.dump(results, f, indent=4, cls=JsonSerialize)
+            print(f"Wrote {len(results)} files to {outfile}.")
+            return None
         elif dbfmt.upper() == "ASDF":
             AsdfFile(results).write_to(outfile)
+            print(f"Wrote {len(results)} files to {outfile}.")
+            return None
+        elif dbfmt.upper() == "DICT":
+            print(f"Wrote {len(results)} files to {outfile}.")
+            return results
+        else:
+            print(f"Unrecognized database format: {dbfmt} returning dictionary",)
+            return results
 
-        print(f"Wrote {len(results)} files to {outfile}.")
+
+    def upadate_database(self, dbfile, verbose=True):
+        """
+
+        Parameters
+        ----------
+        verbose
+        dbfile
+
+        Returns
+        -------
+
+        """
+        outfile = Path(dbfile)
+        tempfile = Path(".temp.json")
+        if not outfile.exists():
+            FileNotFoundError(f"{outfile} does not exist.")
+        with open("/Users/bjha/Data/AFT/AFTmapv2/SFT_db_20250320.json") as fl:
+            results = json.load(fl)
+        if verbose:
+            print(f"Updating database of {self.nfiles-len(results)} files.")
+        if len(results) == self.nfiles:
+            print(f"Based on {len(results)} files databse seems updated.")
+            return None
+        self.current = len(results)-1
+        if verbose:
+            print(f"Current file: {self.current} / {self.nfiles} files.")
+        _results = self.generate_database(dbfmt="dict")
+        if _results:
+            results.update(_results)
+        with open(tempfile, "w") as f:
+            json.dump(results, f, indent=4, cls=JsonSerialize)
+        outfile.unlink()
+        tempfile.rename(outfile)
+        print(f"Updated {outfile} files.")
+        return None
