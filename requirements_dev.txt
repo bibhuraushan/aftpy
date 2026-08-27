@@ -9,7 +9,7 @@ mkdocs-get-deps
 mkdocs-git-revision-date-plugin
 mkdocs-material
 mkdocs-material-extensions
-mkdocstrings=
+mkdocstrings
 mkdocstrings-python
 pygments
 pymdown-extensions
